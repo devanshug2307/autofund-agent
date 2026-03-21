@@ -125,6 +125,7 @@ async def root():
         "docs": "/docs",
         "endpoints": [
             "/services",
+            "/services/catalog",
             "/portfolio/analyze",
             "/vault/report",
             "/vault/alerts",
@@ -196,6 +197,168 @@ async def list_services():
         ),
     ]
     return {"services": [s.model_dump() for s in services], "count": len(services)}
+
+
+# ---------------------------------------------------------------------------
+# Service Catalog — detailed discoverable catalog with examples
+# ---------------------------------------------------------------------------
+@app.get("/services/catalog", tags=["Discovery"])
+async def service_catalog():
+    """
+    Full service catalog with pricing, descriptions, and example requests.
+
+    This endpoint makes the AutoFund agent fully discoverable as required
+    by the Base Services bounty. Any client or agent can call this to
+    understand exactly what services are available and how to call them.
+    """
+    catalog = [
+        {
+            "name": "Portfolio Analysis",
+            "endpoint": "/portfolio/analyze",
+            "method": "POST",
+            "description": (
+                "AI-powered analysis of any Ethereum wallet's holdings, DeFi positions, "
+                "risk profile, and optimization recommendations. Uses LLM inference "
+                "paid from the agent's own yield earnings."
+            ),
+            "pricing": {"fee_usd": 1.00, "payment_method": "onchain escrow via ServiceRegistry"},
+            "example_request": {
+                "url": "POST /portfolio/analyze",
+                "body": {"wallet_address": "0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18"},
+            },
+            "example_response": {
+                "holdings": ["ETH", "stETH", "USDC"],
+                "risk_level": "MODERATE",
+                "recommendations": ["Consider increasing stETH allocation for yield"],
+            },
+        },
+        {
+            "name": "Vault Monitoring Report",
+            "endpoint": "/vault/report",
+            "method": "GET",
+            "description": (
+                "Plain-English Lido Earn vault position report. Tracks yield against "
+                "benchmarks (Aave, rETH, raw staking), detects allocation shifts, and "
+                "provides actionable summaries."
+            ),
+            "pricing": {"fee_usd": 0.00, "payment_method": "free"},
+            "example_request": {"url": "GET /vault/report"},
+            "example_response": {
+                "report": "YOUR POSITION: 50 ETH, APY 3.5%, 24h earnings: 0.0048 ETH...",
+                "timestamp": "2026-03-22T12:00:00",
+            },
+        },
+        {
+            "name": "Vault Alerts",
+            "endpoint": "/vault/alerts",
+            "method": "GET",
+            "description": (
+                "Run all monitoring checks on the vault and return any new alerts "
+                "including yield drops, allocation shifts, and floor breaches."
+            ),
+            "pricing": {"fee_usd": 0.00, "payment_method": "free"},
+            "example_request": {"url": "GET /vault/alerts"},
+            "example_response": {
+                "alerts": [
+                    {"severity": "warning", "title": "Yield Drop Detected", "action_required": False}
+                ],
+                "total_historical_alerts": 1,
+            },
+        },
+        {
+            "name": "Lido APY",
+            "endpoint": "/lido/apy",
+            "method": "GET",
+            "description": (
+                "Current Lido stETH APY fetched live from eth-api.lido.fi, "
+                "with benchmark comparisons against raw staking, Aave, and rETH."
+            ),
+            "pricing": {"fee_usd": 0.00, "payment_method": "free"},
+            "example_request": {"url": "GET /lido/apy"},
+            "example_response": {
+                "steth_apy": 3.5,
+                "benchmark_apy": 3.2,
+                "source": "eth-api.lido.fi",
+            },
+        },
+        {
+            "name": "Lido Stake (dry-run)",
+            "endpoint": "/lido/stake",
+            "method": "POST",
+            "description": (
+                "Simulate staking ETH into Lido. Shows expected stETH return "
+                "and gas estimates. Defaults to dry_run=true for safety."
+            ),
+            "pricing": {"fee_usd": 0.00, "payment_method": "free"},
+            "example_request": {
+                "url": "POST /lido/stake",
+                "body": {"amount": 5.0, "dry_run": True},
+            },
+            "example_response": {
+                "action": "stake_eth",
+                "amount": 5.0,
+                "expected_steth": 4.99,
+                "dry_run": True,
+            },
+        },
+        {
+            "name": "Market Price",
+            "endpoint": "/market/price",
+            "method": "GET",
+            "description": "Real-time ETH/USD price from CoinGecko.",
+            "pricing": {"fee_usd": 0.00, "payment_method": "free"},
+            "example_request": {"url": "GET /market/price"},
+            "example_response": {
+                "pair": "ETH/USD",
+                "price": 3500.00,
+                "source": "CoinGecko",
+            },
+        },
+        {
+            "name": "Market Quote",
+            "endpoint": "/market/quote",
+            "method": "GET",
+            "description": (
+                "Real-time swap quote for any token pair via Uniswap / CoinGecko. "
+                "Supports ETH, USDC, DAI, WBTC, UNI, LINK, and more."
+            ),
+            "pricing": {"fee_usd": 0.00, "payment_method": "free"},
+            "example_request": {
+                "url": "GET /market/quote?token_in=ETH&token_out=USDC&amount=1.0",
+            },
+            "example_response": {
+                "token_in": "ETH",
+                "token_out": "USDC",
+                "amount_in": 1.0,
+                "amount_out": 3500.0,
+            },
+        },
+        {
+            "name": "Agent Status",
+            "endpoint": "/agent/status",
+            "method": "GET",
+            "description": (
+                "The agent's self-sustainability metrics: inference count, costs, "
+                "revenue, net profit, and whether the agent is currently self-sustaining."
+            ),
+            "pricing": {"fee_usd": 0.00, "payment_method": "free"},
+            "example_request": {"url": "GET /agent/status"},
+            "example_response": {
+                "inference_count": 5,
+                "total_inference_cost_usd": 0.003,
+                "revenue_earned_usd": 3.0,
+                "self_sustaining": True,
+            },
+        },
+    ]
+    return {
+        "catalog": catalog,
+        "total_services": len(catalog),
+        "chain": "Base Sepolia (84532)",
+        "agent": "AutoFund",
+        "docs": "/docs",
+        "timestamp": datetime.utcnow().isoformat(),
+    }
 
 
 # ---------------------------------------------------------------------------

@@ -113,6 +113,9 @@ Every claim is verifiable on BaseScan:
 - **Self-funding:** Agent selects cheapest model per task complexity (Gemini Flash for simple, Claude Sonnet for analysis, Opus for critical decisions)
 - **Economics:** 0.002% budget utilization across 5 inferences — agent can run ~100,000 calls before needing more yield
 
+### stETH Treasury Vault Architecture
+> **Note:** The TreasuryVault is designed to work with ANY yield-bearing ERC20 token, not just stETH. The contract accepts a generic `depositToken` and `yieldToken` at deploy time, so the same vault architecture supports stETH, wstETH, aUSDC (Aave), cDAI (Compound), or any future yield-bearing token. We tested with mock ERC20 tokens on Base Sepolia because Lido's stETH is not deployed on testnets — but the on-chain logic is identical to what would run with real stETH on mainnet. The 47 passing tests validate all deposit, yield, spend, and guardrail mechanics regardless of the underlying token.
+
 ### Lido — Yield Source + MCP Server + Vault Monitor
 - **Treasury primitive:** TreasuryVault.sol — principal locked at contract level, only yield withdrawable. 47 tests prove this.
 - **MCP server:** 9 tools — `stake_eth`, `unstake_steth`, `wrap_steth`, `unwrap_wsteth`, `get_balance`, `get_rewards`, `get_apy`, `get_governance_votes`, `monitor_position`. All write operations support `dry_run`.

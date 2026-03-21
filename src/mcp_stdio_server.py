@@ -13,6 +13,59 @@ Usage:
     python3 -m src.mcp_stdio_server --test   # Smoke-test all tools locally
 
 Built for The Synthesis Hackathon — Lido MCP Bounty ($5,000)
+
+============================================================
+HOW TO CONNECT FROM CLAUDE DESKTOP OR CURSOR
+============================================================
+
+1. Claude Desktop — add this to your claude_desktop_config.json
+   (macOS: ~/Library/Application Support/Claude/claude_desktop_config.json
+    Windows: %APPDATA%\\Claude\\claude_desktop_config.json):
+
+   {
+     "mcpServers": {
+       "autofund-lido": {
+         "command": "python3",
+         "args": ["-m", "src.mcp_stdio_server"],
+         "cwd": "/path/to/autofund-agent"
+       }
+     }
+   }
+
+   Then restart Claude Desktop. The 9 Lido tools will appear automatically
+   in the tool picker (hammer icon).
+
+2. Cursor — add to .cursor/mcp.json in your project root:
+
+   {
+     "mcpServers": {
+       "autofund-lido": {
+         "command": "python3",
+         "args": ["-m", "src.mcp_stdio_server"],
+         "cwd": "/path/to/autofund-agent"
+       }
+     }
+   }
+
+   Restart Cursor and the tools will be available in Agent mode.
+
+3. Any MCP client — this server uses the standard stdio transport
+   (JSON-RPC over stdin/stdout). Launch the process and communicate
+   via the MCP protocol:
+
+   $ python3 -m src.mcp_stdio_server
+
+Available Tools (9 total):
+   - stake_eth         Stake ETH into Lido (supports dry_run)
+   - unstake_steth     Request withdrawal from stETH to ETH
+   - wrap_steth        Convert stETH to wstETH
+   - unwrap_wsteth     Convert wstETH back to stETH
+   - get_balance       Query stETH/wstETH balances
+   - get_rewards       Check accumulated staking rewards
+   - get_apy           Current APY with benchmark comparisons
+   - get_governance_votes  Active Lido DAO proposals
+   - monitor_position  Plain-English vault monitoring report
+============================================================
 """
 
 import sys

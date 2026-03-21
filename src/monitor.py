@@ -280,6 +280,75 @@ _{action}_
 _Generated: {alert.timestamp}_"""
 
 
+    def export_alert_history(self, filepath: str = "alert_history.json") -> str:
+        """
+        Export all historical alerts to a JSON file for audit and review.
+
+        Args:
+            filepath: Path to the output JSON file (default: alert_history.json)
+
+        Returns:
+            Confirmation message with the number of alerts exported.
+        """
+        export_data = {
+            "exported_at": datetime.utcnow().isoformat(),
+            "total_alerts": len(self.alerts),
+            "alerts": [
+                {
+                    "severity": alert.severity,
+                    "title": alert.title,
+                    "message": alert.message,
+                    "action_required": alert.action_required,
+                    "timestamp": alert.timestamp,
+                }
+                for alert in self.alerts
+            ],
+        }
+        with open(filepath, "w") as f:
+            json.dump(export_data, f, indent=2)
+        return f"Exported {len(self.alerts)} alerts to {filepath}"
+
+    def schedule_monitoring(self, interval_seconds: int = 300, max_iterations: int = 0):
+        """
+        Run continuous monitoring checks every `interval_seconds`.
+
+        This enables the agent to operate as a long-running monitor that
+        watches the vault position and fires alerts in real time.
+
+        Args:
+            interval_seconds: Seconds between each monitoring cycle (default: 300 = 5 min)
+            max_iterations: Stop after N iterations (0 = run forever)
+        """
+        iteration = 0
+        print(f"[Monitor] Starting scheduled monitoring every {interval_seconds}s")
+        try:
+            while True:
+                iteration += 1
+                print(f"\n[Monitor] Cycle {iteration} — {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}")
+
+                new_alerts = self.run_checks()
+
+                if new_alerts:
+                    for alert in new_alerts:
+                        print(f"  [{alert.severity.upper()}] {alert.title}: {alert.message[:120]}")
+                else:
+                    print("  No new alerts — vault looks healthy.")
+
+                # Auto-export alert history every cycle
+                self.export_alert_history()
+
+                if max_iterations and iteration >= max_iterations:
+                    print(f"[Monitor] Completed {max_iterations} cycles. Stopping.")
+                    break
+
+                time.sleep(interval_seconds)
+
+        except KeyboardInterrupt:
+            print("\n[Monitor] Stopped by user. Exporting final alert history...")
+            self.export_alert_history()
+            print("[Monitor] Done.")
+
+
 def demo():
     """Demo the vault monitor."""
     monitor = VaultMonitor()
@@ -305,6 +374,10 @@ def demo():
         print(f"  {alert.message}")
         print(f"\n  Telegram format:")
         print(monitor.format_telegram_alert(alert))
+
+    # Export alert history demo
+    print("\n--- Exporting alert history ---")
+    print(monitor.export_alert_history())
 
     # Updated report
     print(monitor.generate_report())

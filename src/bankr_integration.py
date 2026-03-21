@@ -42,6 +42,8 @@ class BankrGateway:
     - Llama, Mistral, and 15+ more
     """
 
+    # Official Bankr endpoint — see https://docs.bankr.bot
+    # Auth: X-API-Key header (no Bearer prefix)
     BANKR_API_URL = "https://llm.bankr.bot/v1"
 
     # Cost per token (approximate, USD)
@@ -61,6 +63,46 @@ class BankrGateway:
         self.total_inferences = 0
         self.budget_remaining = 100.0  # From yield harvest
         self.model_usage: dict[str, int] = {}
+
+    def test_connection(self) -> dict:
+        """
+        Test connectivity to the Bankr API by calling the /health endpoint.
+
+        The /health endpoint does not require authentication, so this is safe
+        to call without an API key. Returns a dict with the connectivity status.
+        """
+        health_url = "https://llm.bankr.bot/health"
+        try:
+            with httpx.Client(timeout=10) as client:
+                response = client.get(health_url)
+                return {
+                    "reachable": True,
+                    "status_code": response.status_code,
+                    "url": health_url,
+                    "response": response.text[:200] if response.text else "",
+                    "has_api_key": bool(self.api_key),
+                }
+        except httpx.ConnectError as e:
+            return {
+                "reachable": False,
+                "error": f"Connection failed: {e}",
+                "url": health_url,
+                "has_api_key": bool(self.api_key),
+            }
+        except httpx.TimeoutException:
+            return {
+                "reachable": False,
+                "error": "Connection timed out after 10s",
+                "url": health_url,
+                "has_api_key": bool(self.api_key),
+            }
+        except Exception as e:
+            return {
+                "reachable": False,
+                "error": str(e),
+                "url": health_url,
+                "has_api_key": bool(self.api_key),
+            }
 
     def chat(self, prompt: str, model: str = "claude-sonnet-4-6",
              purpose: str = "general", max_tokens: int = 1024,
@@ -303,6 +345,15 @@ def demo():
     gateway = BankrGateway()
 
     print("=== Bankr LLM Gateway Integration Demo ===\n")
+
+    # Test connectivity first
+    print("--- Testing Bankr API connectivity ---")
+    health = gateway.test_connection()
+    if health["reachable"]:
+        print(f"  Bankr API reachable (status {health['status_code']})")
+    else:
+        print(f"  Bankr API not reachable: {health.get('error', 'unknown')}")
+    print(f"  API key configured: {health['has_api_key']}\n")
 
     # Select optimal models for different tasks
     print("Model Selection (cost optimization):")
