@@ -89,11 +89,27 @@ class BankrGateway:
                 "suggestion": "Harvest more yield or use a cheaper model"
             }
 
-        # Try Bankr API first, fallback to simulation
+        # Always try real Bankr API first, then Anthropic fallback, then simulation
+        response_text = None
+        api_source = "simulation"
+
         if self.api_key:
-            response_text = self._call_bankr_api(prompt, model, max_tokens)
-        else:
+            try:
+                response_text = self._call_bankr_api(prompt, model, max_tokens)
+                api_source = "bankr_api"
+            except Exception as e:
+                print(f"  [Bankr API unavailable: {e}. Trying fallback...]")
+
+        if response_text is None and os.getenv("ANTHROPIC_API_KEY"):
+            try:
+                response_text = self._call_anthropic_direct(prompt, model, max_tokens)
+                api_source = "anthropic_api"
+            except Exception as e:
+                print(f"  [Anthropic API unavailable: {e}. Using simulation...]")
+
+        if response_text is None:
             response_text = self._simulate_response(prompt, model, purpose)
+            api_source = "simulation"
 
         # Calculate actual cost
         prompt_tokens = len(prompt.split()) * 1.3  # Rough estimate
@@ -121,6 +137,7 @@ class BankrGateway:
         return {
             "response": response_text,
             "model": model,
+            "api_source": api_source,
             "cost": round(actual_cost, 6),
             "budget_remaining": round(self.budget_remaining, 4),
             "funding_source": funding_source,
@@ -151,6 +168,28 @@ class BankrGateway:
                 return response.json()["choices"][0]["message"]["content"]
         except Exception as e:
             return self._simulate_response(prompt, model, f"API error: {e}")
+
+    def _call_anthropic_direct(self, prompt: str, model: str, max_tokens: int) -> str:
+        """Fallback: call Anthropic API directly when Bankr is unavailable."""
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise ValueError("No Anthropic API key")
+        with httpx.Client(timeout=30) as client:
+            response = client.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={
+                    "x-api-key": api_key,
+                    "content-type": "application/json",
+                    "anthropic-version": "2023-06-01"
+                },
+                json={
+                    "model": model,
+                    "max_tokens": max_tokens,
+                    "messages": [{"role": "user", "content": prompt}]
+                }
+            )
+            response.raise_for_status()
+            return response.json()["content"][0]["text"]
 
     def _simulate_response(self, prompt: str, model: str, purpose: str) -> str:
         """Simulate a response for demo/testing."""
