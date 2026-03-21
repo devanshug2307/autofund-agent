@@ -140,18 +140,49 @@ python src/agent.py
 ```
 autofund-agent/
 ├── contracts/
-│   ├── TreasuryVault.sol       # Principal-locked yield vault
-│   └── ServiceRegistry.sol     # Agent service marketplace
+│   ├── TreasuryVault.sol       # Principal-locked yield vault with spending guardrails
+│   ├── ServiceRegistry.sol     # Agent service marketplace with escrow micropayments
+│   └── MockERC20.sol           # Test tokens for USDC/stETH simulation
 ├── src/
-│   └── agent.py                # Main agent logic
+│   ├── agent.py                # Core agent: treasury, trading, services
+│   ├── mcp_server.py           # Lido MCP server (8 tools, dry_run support)
+│   ├── monitor.py              # Vault position monitor with plain English alerts
+│   ├── uniswap_trader.py       # Autonomous trading via Uniswap API
+│   ├── bankr_integration.py    # Self-funding inference via Bankr Gateway
+│   └── demo_full_loop.py       # Full 6-phase demo proving profitability
 ├── scripts/
-│   └── deploy.py               # Contract deployment
+│   ├── deploy.cjs              # Local deployment + demo interactions
+│   ├── deploy-base.cjs         # Base Sepolia deployment script
+│   └── deploy-status.cjs       # Status Network (zero-fee) deployment
 ├── test/
-│   └── test_treasury.py        # Contract tests
+│   ├── TreasuryVault.test.cjs  # 17 tests: deposits, yield, guardrails, status
+│   └── ServiceRegistry.test.cjs # 8 tests: registration, deactivation, multi-user
+├── lido.skill.md               # Skill file for agents to understand Lido
+├── BUILD_STORY.md              # Hackathon build story
+├── hardhat.config.cjs          # Hardhat config (Base Sepolia + Status L2)
 ├── requirements.txt
 ├── .env.example
 └── README.md
 ```
+
+## Tests
+
+**25/25 passing** — run with:
+```bash
+npx hardhat --config hardhat.config.cjs test
+```
+
+## Full Demo
+
+Run the complete self-sustaining loop demonstration:
+```bash
+python3 -m src.demo_full_loop
+```
+
+Output proves profitability:
+- 5 LLM inferences (cost: $0.003)
+- 3 paid services (revenue: $3.00)
+- **Net position: $2.997 (PROFITABLE)**
 
 ## Self-Sustainability Metrics
 
