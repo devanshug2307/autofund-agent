@@ -1,0 +1,111 @@
+=== Lido MCP Server Demo ===
+
+Available tools:
+  • stake_eth: Stake ETH into Lido and receive stETH. Earns ~3.5% APY.
+  • unstake_steth: Request withdrawal from stETH back to ETH via Lido withdrawal queue.
+  • wrap_steth: Convert rebasing stETH to non-rebasing wstETH. Better for DeFi.
+  • unwrap_wsteth: Convert wstETH back to stETH.
+  • get_balance: Query current stETH and wstETH balances and total value.
+  • get_rewards: Check accumulated staking rewards and yield estimates.
+  • get_apy: Get current Lido APY and compare with alternative yield sources.
+  • get_governance_votes: Query active Lido DAO governance proposals from Aragon voting and Snapshot.
+  • monitor_position: Generate a comprehensive plain English monitoring report for your Lido position.
+
+--- Dry Run: Stake 10 ETH ---
+{
+  "action": "stake_eth",
+  "eth_amount": 10.0,
+  "steth_received": 10.0,
+  "exchange_rate": 1.0,
+  "current_apy": "2.42%",
+  "message": "[DRY RUN] Would stake 10.0 ETH \u2192 10.0 stETH at 2.42% APY"
+}
+
+--- Stake 10 ETH ---
+{
+  "action": "stake_eth",
+  "eth_amount": 10.0,
+  "steth_received": 10.0,
+  "exchange_rate": 1.0,
+  "current_apy": "2.42%",
+  "message": "Staked 10.0 ETH \u2192 10.0 stETH at 2.42% APY",
+  "contract": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+  "method": "submit(address _referral)",
+  "note": "Requires funded wallet. Use dry_run=True to preview."
+}
+
+--- Check Balance ---
+{
+  "steth_balance": 10.0,
+  "wsteth_balance": 0.0,
+  "total_eth_staked": 10.0,
+  "rewards_earned": 0.0,
+  "total_value_eth": 10.0
+}
+
+--- Wrap 5 stETH to wstETH ---
+{
+  "action": "wrap_steth",
+  "steth_in": 5.0,
+  "wsteth_out": 4.347826,
+  "exchange_rate": 1.15,
+  "why_wrap": "wstETH doesn't rebase \u2014 its value increases instead. Better for DeFi integrations.",
+  "message": "Wrapped 5.0 stETH \u2192 4.347826 wstETH"
+}
+
+--- Check Rewards ---
+{
+  "total_staked": 10.0,
+  "current_apy": "2.42%",
+  "daily_reward_estimate": "0.000663 ETH",
+  "monthly_reward_estimate": "0.019890 ETH",
+  "yearly_reward_estimate": "0.242000 ETH",
+  "rewards_earned_to_date": 0.0
+}
+
+--- APY Comparison ---
+{
+  "lido_steth_apy": "2.42%",
+  "benchmarks": {
+    "raw_eth_staking": "3.2%",
+    "aave_eth_supply": "1.8%",
+    "reth_apy": "3.4%"
+  },
+  "lido_advantage": "Liquid staking \u2014 use stETH in DeFi while earning yield",
+  "note": "APY fluctuates based on network activity and validator performance"
+}
+
+--- Full Position Report ---
+
+╔══════════════════════════════════════════════════╗
+║        LIDO POSITION MONITORING REPORT           ║
+║        Generated: 2026-03-21 18:22 UTC          ║
+╚══════════════════════════════════════════════════╝
+
+YOUR POSITION:
+  • stETH Balance: 5.0000 stETH
+  • wstETH Balance: 4.3478 wstETH
+  • Total Value: ~10.0000 ETH
+  • Total Staked: 10.0000 ETH
+
+YIELD PERFORMANCE:
+  • Current APY: 2.42%
+  • Daily Earnings: ~0.000663 ETH
+  • Monthly Estimate: ~0.019890 ETH
+  • Yearly Estimate: ~0.242000 ETH
+
+COMPARED TO ALTERNATIVES:
+  • vs Raw ETH Staking (3.2%): Lido is HIGHER + liquid
+  • vs Aave Supply (1.8%): Lido earns ~2x more
+  • vs rETH (3.4%): Comparable, Lido has deeper liquidity
+
+RECOMMENDATIONS:
+  • Your position is earning yield normally ✓
+  • No unusual events detected
+  • Consider wrapping to wstETH if using in DeFi protocols
+  • Current yield is above the 90-day average
+
+STATUS: ALL HEALTHY ✓
+
+
+Operations logged: 10

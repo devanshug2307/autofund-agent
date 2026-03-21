@@ -1,0 +1,81 @@
+=== Vault Position Monitor Demo ===
+
+Yield floor set to 3.0%. You'll be alerted if APY drops below this.
+
+╔══════════════════════════════════════════════════════╗
+║         VAULT POSITION MONITORING REPORT              ║
+║         2026-03-21 18:22 UTC                          ║
+╚══════════════════════════════════════════════════════╝
+
+YOUR POSITION:
+  Total Value: 50.0 ETH
+  Current APY: 2.42%
+  24h Earnings: 0.0033 ETH (~$11.60)
+  Yield Floor: 3.0% ⚠ BELOW
+
+VAULT ALLOCATION:
+  Aave         █████████████████░░░░░░░░ 35.0%
+  Morpho       ████████████░░░░░░░░░░░░░ 25.0%
+  Pendle       ██████████░░░░░░░░░░░░░░░ 20.0%
+  Gearbox      ██████░░░░░░░░░░░░░░░░░░░ 12.0%
+  Maple        ████░░░░░░░░░░░░░░░░░░░░░ 8.0%
+
+BENCHMARK COMPARISON:
+  • Lido stETH:      2.42% APY  ← YOUR RATE
+  • Raw ETH Staking: 3.2% APY
+  • Aave ETH Supply: 1.8% APY
+  • rETH:            3.4% APY
+
+  Verdict: You're earning LESS than raw staking,
+  with the added benefit of liquid staking (you can use stETH in DeFi).
+
+RECENT ALERTS: 0
+  None — everything looks normal ✓
+
+WHAT TO DO:
+  • No action needed — your position is performing as expected
+  • Yield is below the raw staking benchmark
+  • Next report will be generated in 1 hour
+
+STATUS: ✓ ALL HEALTHY
+
+
+--- Simulating yield drop ---
+
+╔══════════════════════════════════════════════════════╗
+║         VAULT POSITION MONITORING REPORT              ║
+║         2026-03-21 18:22 UTC                          ║
+╚══════════════════════════════════════════════════════╝
+
+YOUR POSITION:
+  Total Value: 50.0 ETH
+  Current APY: 3.1%
+  24h Earnings: 0.0033 ETH (~$11.60)
+  Yield Floor: 3.0% ✓ ABOVE
+
+VAULT ALLOCATION:
+  Aave         ███████████████░░░░░░░░░░ 30.0%
+  Morpho       ███████████████░░░░░░░░░░ 30.0%
+  Pendle       ██████████░░░░░░░░░░░░░░░ 20.0%
+  Gearbox      ██████░░░░░░░░░░░░░░░░░░░ 12.0%
+  Maple        ████░░░░░░░░░░░░░░░░░░░░░ 8.0%
+
+BENCHMARK COMPARISON:
+  • Lido stETH:      3.1% APY  ← YOUR RATE
+  • Raw ETH Staking: 3.2% APY
+  • Aave ETH Supply: 1.8% APY
+  • rETH:            3.4% APY
+
+  Verdict: You're earning LESS than raw staking,
+  with the added benefit of liquid staking (you can use stETH in DeFi).
+
+RECENT ALERTS: 0
+  None — everything looks normal ✓
+
+WHAT TO DO:
+  • No action needed — your position is performing as expected
+  • Yield is below the raw staking benchmark
+  • Next report will be generated in 1 hour
+
+STATUS: ✓ ALL HEALTHY
+
