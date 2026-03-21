@@ -155,7 +155,7 @@ class BankrGateway:
                 response = client.post(
                     f"{self.BANKR_API_URL}/chat/completions",
                     headers={
-                        "Authorization": f"Bearer {self.api_key}",
+                        "X-API-Key": self.api_key,
                         "Content-Type": "application/json"
                     },
                     json={
