@@ -1,0 +1,21 @@
+{
+  "network": "Celo Sepolia (11142220)",
+  "deployer": "0x54eeFbb7b3F701eEFb7fa99473A60A6bf5fE16D7",
+  "explorer": "https://celo-sepolia.blockscout.com",
+  "contracts": {
+    "mockUSDC": "0x0060eD967436DC210aF9F5A2A3A98Ff4D876040b",
+    "mockCUSD": "0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3",
+    "treasuryVault": "0x889442b60e3FBFfFE75d8231EC626138F2505C8f",
+    "serviceRegistry": "0x5cFA9374C4DcdFE58A32d2702d73bB643cc85A36"
+  },
+  "transactions": {
+    "mint": "0xa901b59d4246f736990ffbc36d1b3da6b19e6f311188692610105daa074dca08",
+    "deposit": "0x9475a0566c4fe93aab2eb005bedaa519e9096bca0e133349f174525f457d3c0c",
+    "harvest": "0x57ef65a6e8bc8b0a1aab610de5a01e3e44e7d8c52f211e33e37cebbcd36bd106",
+    "registerService": "0x515bf7ebd70f5d84e973654f30af6e04439158e939acf61897ee21a74fd5910d",
+    "agentSpend": "0x1a954b845a8e68b6b8f84e55bc98d26dee03652d480b5014a39d87ccefae10ae",
+    "serviceRequest": "0x7f961fdfd9d1ff708bcdfc83817ee81d96b2b7365cd933efcbc352d6ce5d1d72",
+    "serviceComplete": "0xdb3337580c2f8391cca2445658daecfcb3bd537a47ac6d67eb1c67759360b06e"
+  },
+  "timestamp": "2026-03-21T20:05:34.392Z"
+}

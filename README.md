@@ -84,10 +84,14 @@ Human deposits $1,000 → Principal LOCKED in TreasuryVault
 | ServiceRegistry | Base Sepolia | [`0xa602931E5976FA282d0887c8Bd1741a6FEfF9Dc1`](https://sepolia.basescan.org/address/0xa602931E5976FA282d0887c8Bd1741a6FEfF9Dc1) | Yes |
 | Mock USDC | Base Sepolia | [`0x5cFA9374C4DcdFE58A32d2702d73bB643cc85A36`](https://sepolia.basescan.org/address/0x5cFA9374C4DcdFE58A32d2702d73bB643cc85A36) | Yes |
 | Mock stETH | Base Sepolia | [`0xC7EBEcBfb08B437B6B00d51a7de004E047B4B116`](https://sepolia.basescan.org/address/0xC7EBEcBfb08B437B6B00d51a7de004E047B4B116) | Yes |
+| TreasuryVault | Celo Sepolia | [`0x889442b60e3FBFfFE75d8231EC626138F2505C8f`](https://celo-sepolia.blockscout.com/address/0x889442b60e3FBFfFE75d8231EC626138F2505C8f) | Yes |
+| ServiceRegistry | Celo Sepolia | [`0x5cFA9374C4DcdFE58A32d2702d73bB643cc85A36`](https://celo-sepolia.blockscout.com/address/0x5cFA9374C4DcdFE58A32d2702d73bB643cc85A36) | Yes |
+| Mock USDC | Celo Sepolia | [`0x0060eD967436DC210aF9F5A2A3A98Ff4D876040b`](https://celo-sepolia.blockscout.com/address/0x0060eD967436DC210aF9F5A2A3A98Ff4D876040b) | Yes |
+| Mock cUSD | Celo Sepolia | [`0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3`](https://celo-sepolia.blockscout.com/address/0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3) | Yes |
 
 ## Onchain Transaction Proof
 
-Every claim is verifiable on BaseScan:
+Every claim is verifiable on BaseScan and Blockscout:
 
 | # | Action | TX Hash | What It Proves |
 |---|--------|---------|----------------|
@@ -103,6 +107,18 @@ Every claim is verifiable on BaseScan:
 | 10 | Complete service (payment released) | [`0x5bdae3...`](https://sepolia.basescan.org/tx/0x5bdae3335f3ec7a8cb6388b1ac56f3434c7e14c46b9ec7873f87fc657479b0b2) | Full lifecycle proven |
 
 **ERC-8004 Identity:** [`0x989089...`](https://basescan.org/tx/0x9890894365098da23a347ba828bab3c6f01b6fd6307e914297be5801e7b36282) (Base Mainnet)
+
+### Celo Sepolia Onchain Proof
+
+| # | Action | TX Hash | What It Proves |
+|---|--------|---------|----------------|
+| 1 | Mint 10,000 mUSDC | [`0xa901b5...`](https://celo-sepolia.blockscout.com/tx/0xa901b59d4246f736990ffbc36d1b3da6b19e6f311188692610105daa074dca08) | Token creation on Celo |
+| 2 | Deposit $1,000 into TreasuryVault | [`0x9475a0...`](https://celo-sepolia.blockscout.com/tx/0x9475a0566c4fe93aab2eb005bedaa519e9096bca0e133349f174525f457d3c0c) | Principal locked on Celo |
+| 3 | Agent harvests $50 yield | [`0x57ef65...`](https://celo-sepolia.blockscout.com/tx/0x57ef65a6e8bc8b0a1aab610de5a01e3e44e7d8c52f211e33e37cebbcd36bd106) | Yield withdrawal on Celo |
+| 4 | Register service | [`0x515bf7...`](https://celo-sepolia.blockscout.com/tx/0x515bf7ebd70f5d84e973654f30af6e04439158e939acf61897ee21a74fd5910d) | Service marketplace on Celo |
+| 5 | Agent spends $5 on inference | [`0x1a954b...`](https://celo-sepolia.blockscout.com/tx/0x1a954b845a8e68b6b8f84e55bc98d26dee03652d480b5014a39d87ccefae10ae) | Self-funding on Celo |
+| 6 | Service requested ($1 escrowed) | [`0x7f961f...`](https://celo-sepolia.blockscout.com/tx/0x7f961fdfd9d1ff708bcdfc83817ee81d96b2b7365cd933efcbc352d6ce5d1d72) | Escrow on Celo |
+| 7 | Service completed (payment released) | [`0xdb3337...`](https://celo-sepolia.blockscout.com/tx/0xdb3337580c2f8391cca2445658daecfcb3bd537a47ac6d67eb1c67759360b06e) | Full lifecycle on Celo |
 
 ## Integrations
 
@@ -135,6 +151,14 @@ Every claim is verifiable on BaseScan:
 - 4 contracts deployed on Base Sepolia
 - 10+ verified onchain transactions
 - Full service lifecycle proven: Register → Request → Escrow → Complete → Pay
+
+### Celo — Multi-Chain Deployment
+- **4 contracts deployed on Celo Sepolia** — same architecture, proving chain-agnostic design
+- **7 verified onchain transactions** — full lifecycle: mint, deposit, harvest, spend, register, request, complete
+- **Why Celo:** Fee abstraction lets agents pay gas in stablecoins (USDC/USDT) instead of native tokens — ideal for autonomous agent treasury management
+- **Sub-cent transactions** enable continuous autonomous operation without human gas management
+- **Stablecoin-native:** Celo supports 25+ stablecoins tracking local currencies, perfect for global agent services
+- **Explorer:** [celo-sepolia.blockscout.com](https://celo-sepolia.blockscout.com)
 
 ## Tests
 
@@ -208,6 +232,7 @@ autofund-agent/
 ├── scripts/
 │   ├── deploy.cjs                 # Local deployment + demo
 │   ├── deploy-base.cjs            # Base Sepolia deployment
+│   ├── deploy-celo.cjs            # Celo Sepolia deployment
 │   ├── deploy-vault.cjs           # Vault-only deployment
 │   ├── deploy-status.cjs          # Status L2 deployment
 │   ├── onchain-demo.cjs           # Treasury onchain demo

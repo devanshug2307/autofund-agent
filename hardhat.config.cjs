@@ -20,6 +20,11 @@ module.exports = {
       url: "https://public.sepolia.rpc.status.network",
       chainId: 1660990954,
       accounts: [PRIVATE_KEY]
+    },
+    celoSepolia: {
+      url: "https://forno.celo-sepolia.celo-testnet.org",
+      chainId: 11142220,
+      accounts: [PRIVATE_KEY]
     }
   },
   paths: {
