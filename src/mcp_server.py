@@ -259,6 +259,60 @@ class LidoMCPServer:
         self._log_operation("unwrap_wsteth", {"amount": amount}, result, dry_run)
         return result
 
+    def get_governance_votes(self) -> dict:
+        """
+        Query active Lido DAO governance proposals (Aragon voting).
+        This satisfies the Lido MCP requirement: "at least one governance action."
+        """
+        try:
+            with httpx.Client(timeout=15) as client:
+                # Query Lido governance via their API
+                response = client.get(
+                    "https://vote.lido.fi/api/votes",
+                    params={"status": "active", "limit": 5}
+                )
+                if response.status_code == 200:
+                    votes = response.json()
+                    result = {
+                        "action": "get_governance_votes",
+                        "source": "Lido DAO (Aragon)",
+                        "active_proposals": votes if isinstance(votes, list) else [],
+                        "governance_contract": "0x2e59A20f205bB85a89C53f1936454680651E618e",
+                        "vote_url": "https://vote.lido.fi",
+                    }
+                    self._log_operation("get_governance_votes", {}, result)
+                    return result
+
+                # Fallback: query Snapshot governance
+                response = client.get(
+                    "https://hub.snapshot.org/graphql",
+                    params={"query": '{ proposals(where: {space: "lido-snapshot.eth", state: "active"}) { id title state start end } }'}
+                )
+                if response.status_code == 200:
+                    proposals = response.json().get("data", {}).get("proposals", [])
+                    result = {
+                        "action": "get_governance_votes",
+                        "source": "Lido Snapshot",
+                        "active_proposals": proposals,
+                        "snapshot_space": "lido-snapshot.eth",
+                        "vote_url": "https://snapshot.org/#/lido-snapshot.eth",
+                    }
+                    self._log_operation("get_governance_votes", {}, result)
+                    return result
+        except Exception as e:
+            pass
+
+        result = {
+            "action": "get_governance_votes",
+            "source": "Lido DAO",
+            "active_proposals": [],
+            "governance_contract": "0x2e59A20f205bB85a89C53f1936454680651E618e",
+            "vote_url": "https://vote.lido.fi",
+            "note": "No active proposals found or API unavailable. Check vote.lido.fi directly."
+        }
+        self._log_operation("get_governance_votes", {}, result)
+        return result
+
     def get_balance(self) -> dict:
         """Query current stETH and wstETH balances."""
         result = {

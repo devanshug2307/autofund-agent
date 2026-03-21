@@ -108,8 +108,8 @@ class UniswapTrader:
                         "type": "EXACT_INPUT",
                         "tokenInChainId": self.chain_id,
                         "tokenOutChainId": self.chain_id,
-                        "protocols": ["V3", "V2"],
-                        "slippageTolerance": "0.5"
+                        "swapper": "0x54eeFbb7b3F701eEFb7fa99473A60A6bf5fE16D7",
+                        "slippageTolerance": 0.5
                     }
                 )
 

@@ -1,0 +1,191 @@
+{
+  "timestamp": "2026-03-21T16:42:40Z",
+  "status": 200,
+  "data": {
+    "requestId": "alSUKjwmCYcEMJQ=",
+    "routing": "CLASSIC",
+    "permitData": {
+      "domain": {
+        "name": "Permit2",
+        "chainId": 8453,
+        "verifyingContract": "0x000000000022D473030F116dDEE9F6B43aC78BA3"
+      },
+      "types": {
+        "PermitSingle": [
+          {
+            "name": "details",
+            "type": "PermitDetails"
+          },
+          {
+            "name": "spender",
+            "type": "address"
+          },
+          {
+            "name": "sigDeadline",
+            "type": "uint256"
+          }
+        ],
+        "PermitDetails": [
+          {
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "name": "amount",
+            "type": "uint160"
+          },
+          {
+            "name": "expiration",
+            "type": "uint48"
+          },
+          {
+            "name": "nonce",
+            "type": "uint48"
+          }
+        ]
+      },
+      "values": {
+        "details": {
+          "token": "0x4200000000000000000000000000000000000006",
+          "amount": "1461501637330902918203684832716283019655932542975",
+          "expiration": "1776703361",
+          "nonce": "0"
+        },
+        "spender": "0x6ff5693b99212da76ad316178a184ab56d299b43",
+        "sigDeadline": "1774113161"
+      }
+    },
+    "permitTransaction": null,
+    "quote": {
+      "chainId": 8453,
+      "swapper": "0x54eeFbb7b3F701eEFb7fa99473A60A6bf5fE16D7",
+      "tradeType": "EXACT_INPUT",
+      "route": [
+        [
+          {
+            "type": "v3-pool",
+            "address": "0xb4CB800910B228ED3d0834cF79D697127BBB00e5",
+            "tokenIn": {
+              "address": "0x4200000000000000000000000000000000000006",
+              "chainId": 8453,
+              "symbol": "WETH",
+              "decimals": "18"
+            },
+            "tokenOut": {
+              "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "chainId": 8453,
+              "symbol": "USDC",
+              "decimals": "6"
+            },
+            "sqrtRatioX96": "3671762050823119814147523",
+            "liquidity": "21048849199960028",
+            "tickCurrent": "-199599",
+            "fee": "100",
+            "amountIn": "100000000000000000",
+            "amountOut": "214709301"
+          }
+        ],
+        [
+          {
+            "type": "v4-pool",
+            "address": "0xbb2aefc6c55a0464b944c0478869527ba1a537f05f90a1bb82e1196c6e9403e2",
+            "tokenIn": {
+              "address": "0x4200000000000000000000000000000000000006",
+              "chainId": 8453,
+              "symbol": "WETH",
+              "decimals": "18"
+            },
+            "tokenOut": {
+              "address": "0x0000000000000000000000000000000000000000",
+              "chainId": 8453,
+              "symbol": "WETH",
+              "decimals": "18"
+            },
+            "sqrtRatioX96": "79228162514264337593543950336",
+            "liquidity": "0",
+            "tickCurrent": "0",
+            "fee": "0",
+            "tickSpacing": "1",
+            "hooks": "0xb08211d57032dd10b1974d4b876851a7f7596888",
+            "amountIn": "100000000000000000"
+          },
+          {
+            "type": "v4-pool",
+            "address": "0x96d4b53a38337a5733179751781178a2613306063c511b78cd02684739288c0a",
+            "tokenIn": {
+              "address": "0x0000000000000000000000000000000000000000",
+              "chainId": 8453,
+              "symbol": "WETH",
+              "decimals": "18"
+            },
+            "tokenOut": {
+              "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "chainId": 8453,
+              "symbol": "USDC",
+              "decimals": "6"
+            },
+            "sqrtRatioX96": "3672187765603331098836723",
+            "liquidity": "37149911894726154",
+            "tickCurrent": "-199596",
+            "fee": "500",
+            "tickSpacing": "10",
+            "hooks": "0x0000000000000000000000000000000000000000",
+            "amountOut": "214693668"
+          }
+        ],
+        [
+          {
+            "type": "v3-pool",
+            "address": "0xd0b53D9277642d899DF5C87A3966A349A798F224",
+            "tokenIn": {
+              "address": "0x4200000000000000000000000000000000000006",
+              "chainId": 8453,
+              "symbol": "WETH",
+              "decimals": "18"
+            },
+            "tokenOut": {
+              "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "chainId": 8453,
+              "symbol": "USDC",
+              "decimals": "6"
+            },
+            "sqrtRatioX96": "3671859800603466516746920",
+            "liquidity": "1451149481695642224",
+            "tickCurrent": "-199598",
+            "fee": "500",
+            "amountIn": "800000000000000000",
+            "amountOut": "1717412853"
+          }
+        ]
+      ],
+      "input": {
+        "amount": "1000000000000000000",
+        "token": "0x4200000000000000000000000000000000000006"
+      },
+      "output": {
+        "amount": "2146815822",
+        "token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "recipient": "0x54eeFbb7b3F701eEFb7fa99473A60A6bf5fE16D7"
+      },
+      "slippage": 0.5,
+      "priceImpact": 0.05,
+      "gasFee": "2139908618301",
+      "gasFeeUSD": "0.004595503294080313",
+      "gasFeeQuote": "4595",
+      "gasUseEstimate": "356000",
+      "quoteId": "63236bc3-823a-498f-b89d-b5cca38d1ec0",
+      "gasPrice": "6000000",
+      "txFailureReasons": [],
+      "gasEstimates": [],
+      "aggregatedOutputs": [
+        {
+          "amount": "2146815822",
+          "token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "recipient": "0x54eeFbb7b3F701eEFb7fa99473A60A6bf5fE16D7",
+          "bps": 10000,
+          "minAmount": "2136081742"
+        }
+      ]
+    }
+  }
+}
