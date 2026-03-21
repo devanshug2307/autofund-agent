@@ -25,3 +25,5 @@ demo_output.json
 .credentials.json
 memory/
 _reference/
+.venv/
+.venv/
