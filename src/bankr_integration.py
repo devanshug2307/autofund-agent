@@ -42,7 +42,7 @@ class BankrGateway:
     - Llama, Mistral, and 15+ more
     """
 
-    BANKR_API_URL = "https://api.bankr.bot/v1"
+    BANKR_API_URL = "https://llm.bankr.bot/v1"
 
     # Cost per token (approximate, USD)
     MODEL_COSTS = {
