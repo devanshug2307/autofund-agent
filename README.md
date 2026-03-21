@@ -102,8 +102,10 @@ Agent identity registered on Base mainnet via The Synthesis registration.
 
 | Contract | Network | Address | Description |
 |----------|---------|---------|-------------|
-| TreasuryVault | Base Sepolia | `TBD` | Locks principal, releases yield only |
-| ServiceRegistry | Base Sepolia | `TBD` | Agent service marketplace with micropayments |
+| Mock USDC | Base Sepolia | [`0x0060eD967436DC210aF9F5A2A3A98Ff4D876040b`](https://sepolia.basescan.org/address/0x0060eD967436DC210aF9F5A2A3A98Ff4D876040b) | Test USDC token |
+| Mock stETH | Base Sepolia | [`0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3`](https://sepolia.basescan.org/address/0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3) | Test stETH yield token |
+| TreasuryVault | Base Sepolia | Deploying... | Locks principal, releases yield only |
+| ServiceRegistry | Base Sepolia | Deploying... | Agent service marketplace with micropayments |
 
 ## Tech Stack
 
