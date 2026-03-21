@@ -27,6 +27,7 @@ from src.mcp_server import LidoMCPServer
 from src.monitor import VaultMonitor
 from src.uniswap_trader import UniswapTrader
 from src.bankr_integration import BankrGateway
+from src.self_check import SelfChecker
 
 
 class AutoFundDaemon:
@@ -63,6 +64,9 @@ class AutoFundDaemon:
 
         # Activity log for the full daemon session
         self.session_log = []
+
+        # Self-checker: verifies treasury + operations after each cycle
+        self.checker = SelfChecker(self.agent, self.mcp, self.monitor, self.bankr)
 
         # Handle graceful shutdown
         signal.signal(signal.SIGINT, self._shutdown)
@@ -157,6 +161,21 @@ class AutoFundDaemon:
             "status": status
         }
         self._log("log", f"Cycle #{self.cycle_count} complete in {cycle_result['duration_seconds']:.1f}s")
+
+        # Phase 7: SELF-CHECK — verify treasury, budget, and operations
+        verdict = self.checker.run(cycle_result)
+        print(verdict.summary())
+        self._log("verify", f"Self-check {'PASSED' if verdict.passed else 'FAILED'} ({verdict.checks_passed}/{verdict.checks_run})", {
+            "passed": verdict.passed,
+            "checks_passed": verdict.checks_passed,
+            "checks_run": verdict.checks_run,
+            "treasury_ok": verdict.treasury_ok,
+            "yield_positive": verdict.yield_positive,
+            "net_sustainable": verdict.net_sustainable,
+            "recommendations": verdict.recommendations,
+        })
+        cycle_result["self_check_passed"] = verdict.passed
+        cycle_result["self_check_score"] = f"{verdict.checks_passed}/{verdict.checks_run}"
 
         return cycle_result
 
