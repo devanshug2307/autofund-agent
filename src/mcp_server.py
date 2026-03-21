@@ -244,7 +244,7 @@ YOUR POSITION:
   • stETH Balance: {balance['steth_balance']:.4f} stETH
   • wstETH Balance: {balance['wsteth_balance']:.4f} wstETH
   • Total Value: ~{balance['total_value_eth']:.4f} ETH
-  • Total Staked: {balance['total_staked']:.4f} ETH
+  • Total Staked: {balance.get('total_eth_staked', 0):.4f} ETH
 
 YIELD PERFORMANCE:
   • Current APY: {apy['lido_steth_apy']}
