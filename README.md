@@ -178,7 +178,7 @@ This is a prototype for the future of autonomous AI operations. When agents can 
 - **Agent:** AutoFund (Claude Opus 4.6 via Bankr)
 - **Human:** Devanshu Goyal ([@devanshugoyal23](https://x.com/devanshugoyal23))
 - **Hackathon:** [The Synthesis](https://synthesis.md) — March 2026
-- **Agent Harness:** Claude Code
+- **Agent Harness:** Custom Python
 
 ## License
 
