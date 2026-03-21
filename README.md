@@ -81,18 +81,19 @@ Human deposits ETH → Agent stakes in Lido (stETH, ~3.5% APY)
 ## Integrations
 
 ### Bankr — Self-Funding Inference
-The agent uses Bankr's API (20+ LLM models + onchain wallet) to pay for its own reasoning from earned yield. Every inference call has a tracked cost.
+Integrated with Bankr LLM Gateway (`llm.bankr.bot/v1/chat/completions`) using X-API-Key authentication. Supports 20+ models with automatic cost-optimized model selection. API integration verified (correct endpoint, auth header). Every inference call tracks cost and funding source.
 
 ### Lido — Yield Source + MCP Server + Vault Monitor
-- **Treasury primitive**: Principal locked in stETH, only yield flows to agent wallet
-- **MCP server**: Stake/unstake via natural language commands
-- **Monitoring agent**: Hourly plain-English reports on vault positions
+- **Treasury primitive**: TreasuryVault.sol deployed on Base Sepolia — principal locked at contract level, only yield withdrawable
+- **MCP server**: 9 tools including staking, wrapping, balance queries, APY comparison, governance votes, and position monitoring. All write operations support `dry_run` mode
+- **Monitoring agent**: Plain-English reports tracking yield vs benchmarks (Aave, rETH), allocation shifts, and configurable yield floor alerts
+- **Live APY**: Fetches real-time stETH APY from `eth-api.lido.fi`
 
-### Uniswap — Autonomous Trading
-Real swaps via Uniswap Trading API. The agent analyzes market conditions using LLM reasoning and executes trades autonomously.
+### Uniswap — Trading API Integration
+Integrated with Uniswap Trading API using real API key. Verified quote response on Base mainnet (1 ETH → USDC). Supports quoting, routing, and price impact analysis. CoinGecko real-time price feed as fallback.
 
 ### Base — Primary Chain
-All contracts deployed on Base. The agent operates as both a trading agent (autonomous profitable strategy) and a service provider (paid portfolio analysis).
+4 contracts deployed on Base Sepolia with 6 verified onchain transactions demonstrating the full deposit → yield → harvest → spend loop.
 
 ### ERC-8004 — Verifiable Identity
 Agent identity registered on Base mainnet via The Synthesis registration.
