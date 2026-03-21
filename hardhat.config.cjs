@@ -17,8 +17,8 @@ module.exports = {
       accounts: [PRIVATE_KEY]
     },
     statusSepolia: {
-      url: "https://public.sepolia.status.network",
-      chainId: 1660,
+      url: "https://public.sepolia.rpc.status.network",
+      chainId: 1660990954,
       accounts: [PRIVATE_KEY]
     }
   },
