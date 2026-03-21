@@ -414,6 +414,7 @@ STATUS: ALL HEALTHY ✓
             "get_balance": lambda **_: self.get_balance(),
             "get_rewards": lambda **_: self.get_rewards(),
             "get_apy": lambda **_: self.get_apy(),
+            "get_governance_votes": lambda **_: self.get_governance_votes(),
             "monitor_position": lambda **_: self.monitor_position(),
         }
 
@@ -471,6 +472,11 @@ STATUS: ALL HEALTHY ✓
             {
                 "name": "get_apy",
                 "description": "Get current Lido APY and compare with alternative yield sources.",
+                "parameters": {}
+            },
+            {
+                "name": "get_governance_votes",
+                "description": "Query active Lido DAO governance proposals from Aragon voting and Snapshot.",
                 "parameters": {}
             },
             {
