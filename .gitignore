@@ -1,0 +1,7 @@
+.credentials.json
+.env
+*.key
+*.secret
+node_modules/
+__pycache__/
+.DS_Store
