@@ -1,0 +1,31 @@
+{
+  "name": "agent-hackathon",
+  "version": "1.0.0",
+  "description": "> An autonomous AI agent that earns its own operating budget from DeFi yield, pays for its own compute, and provides paid financial services — without ever touching the principal.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devanshug2307/autofund-agent.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/devanshug2307/autofund-agent/issues"
+  },
+  "homepage": "https://github.com/devanshug2307/autofund-agent#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.2",
+    "hardhat": "^2.28.6"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.6.1",
+    "dotenv": "^17.3.1"
+  }
+}
