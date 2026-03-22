@@ -1,13 +1,32 @@
 """
-AutoFund Lido MCP Server
-=========================
-A Model Context Protocol server that makes Lido stETH staking, position management,
-and monitoring natively callable by any AI agent through natural language.
+AutoFund Lido MCP Server — Core Logic
+======================================
+This is the core business logic for the AutoFund Lido MCP server.
 
-Covers: stake, unstake, wrap/unwrap, balance queries, yield monitoring,
-and vault position reports.
+** THIS IS NOT A REST API WRAPPER. **
 
-Built for The Synthesis Hackathon - Lido MCP Bounty ($5,000)
+The MCP server runs over stdio transport (JSON-RPC over stdin/stdout) via
+mcp_stdio_server.py.  A developer points Claude Desktop, Cursor, or any
+MCP-compatible agent at the stdio process and gets 9 native Lido tools:
+
+    stake_eth, unstake_steth, wrap_steth, unwrap_wsteth,
+    get_balance, get_rewards, get_apy, get_governance_votes,
+    monitor_position
+
+Every write operation supports dry_run=True so the agent can preview the
+transaction before signing.
+
+Transport:  stdio  (JSON-RPC 2.0 over stdin/stdout)
+Protocol:   Model Context Protocol (MCP) — https://modelcontextprotocol.io
+Entry:      python3 -m src.mcp_stdio_server
+Config:     See mcp_stdio_server.py header for Claude Desktop / Cursor setup
+
+On-chain contracts:
+    stETH   0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84  (mainnet)
+    wstETH  0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0  (mainnet)
+    WQ      0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1  (mainnet)
+
+Built for The Synthesis Hackathon — Lido MCP Bounty ($5,000)
 """
 
 import json

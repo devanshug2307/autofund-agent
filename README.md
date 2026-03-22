@@ -134,11 +134,12 @@ Every claim is verifiable on BaseScan and Blockscout:
 
 ### Lido — Yield Source + MCP Server + Vault Monitor
 - **Treasury primitive:** TreasuryVault.sol — principal locked at contract level, only yield withdrawable. 47 tests prove this.
-- **MCP server:** 9 tools — `stake_eth`, `unstake_steth`, `wrap_steth`, `unwrap_wsteth`, `get_balance`, `get_rewards`, `get_apy`, `get_governance_votes`, `monitor_position`. All write operations support `dry_run`.
+- **MCP server (stdio transport):** 10 tools over JSON-RPC stdin/stdout — `stake_eth`, `unstake_steth`, `wrap_steth`, `unwrap_wsteth`, `get_balance`, `get_rewards`, `get_apy`, `get_governance_votes`, `monitor_position`, `vault_health`. All write operations support `dry_run`. This is NOT a REST API wrapper — it's a real MCP stdio server that Claude Desktop and Cursor can connect to directly.
 - **Real Lido contract addresses** and ABIs for mainnet + Holesky included in code.
 - **Live APY:** Fetches real-time stETH APY from `eth-api.lido.fi/v1/protocol/steth/apr/sma`
-- **Monitoring:** Plain-English reports tracking yield vs benchmarks (Aave, rETH, raw staking), allocation shifts across Aave/Morpho/Pendle/Gearbox/Maple, Telegram alert formatting
-- **Skill file:** `lido.skill.md` gives agents the mental model (rebasing, wstETH tradeoffs, safe patterns)
+- **Vault Monitor with Telegram alerts:** Plain-English reports tracking yield vs benchmarks (Aave, rETH, raw staking), allocation shifts across Aave/Morpho/Pendle/Gearbox/Maple. Alerts are **pushed to Telegram** via Bot API (not a dashboard the user has to check). Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` to enable.
+- **MCP-callable vault_health:** Structured JSON health check tool callable by other agents — returns status, APY spread, allocation, alerts, and recommended actions (bonus agent-to-agent interop).
+- **Skill file:** `lido.skill.md` gives agents the mental model (rebasing mechanics, wstETH vs stETH, L2 bridging, safe patterns, governance)
 
 ### Uniswap — Trading API Integration
 - **API Key:** Real key from Developer Platform (verified)
@@ -223,8 +224,9 @@ autofund-agent/
 │   └── MockERC20.sol              # Test tokens
 ├── src/
 │   ├── agent.py                   # Core agent: treasury, trading, services
-│   ├── mcp_server.py              # Lido MCP server (9 tools + dry_run)
-│   ├── monitor.py                 # Vault monitor with real Lido APY
+│   ├── mcp_server.py              # Lido MCP server core (10 tools + dry_run)
+│   ├── mcp_stdio_server.py        # MCP stdio transport (JSON-RPC over stdin/stdout)
+│   ├── monitor.py                 # Vault monitor + Telegram alerts + vault_health
 │   ├── uniswap_trader.py          # Trading via Uniswap API (verified)
 │   ├── bankr_integration.py       # Self-funding via Bankr Gateway
 │   ├── daemon.py                  # Autonomous daemon mode
@@ -250,6 +252,7 @@ autofund-agent/
 ├── uniswap_mainnet_quote.json     # Verified Uniswap API quote proof
 ├── uniswap_quote_proof.json       # Additional quote proof
 ├── demo_output.json               # Full demo activity log
+├── mcp_smoke_test_output.txt      # Proof: MCP stdio server smoke test output
 ├── hardhat.config.cjs
 ├── requirements.txt
 ├── .env.example

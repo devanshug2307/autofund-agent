@@ -55,7 +55,7 @@ HOW TO CONNECT FROM CLAUDE DESKTOP OR CURSOR
 
    $ python3 -m src.mcp_stdio_server
 
-Available Tools (9 total):
+Available Tools (10 total):
    - stake_eth         Stake ETH into Lido (supports dry_run)
    - unstake_steth     Request withdrawal from stETH to ETH
    - wrap_steth        Convert stETH to wstETH
@@ -65,6 +65,7 @@ Available Tools (9 total):
    - get_apy           Current APY with benchmark comparisons
    - get_governance_votes  Active Lido DAO proposals
    - monitor_position  Plain-English vault monitoring report
+   - vault_health      Structured health check (MCP agent-to-agent)
 ============================================================
 """
 
@@ -81,11 +82,13 @@ from mcp.types import (
 )
 
 from src.mcp_server import LidoMCPServer
+from src.monitor import VaultMonitor
 
 # ---------------------------------------------------------------------------
 # Bootstrap the underlying Lido logic (reuses existing, battle-tested code)
 # ---------------------------------------------------------------------------
 _lido = LidoMCPServer()
+_monitor = VaultMonitor()
 
 # ---------------------------------------------------------------------------
 # MCP Server instance
@@ -234,6 +237,19 @@ async def list_tools() -> list[Tool]:
                 "properties": {},
             },
         ),
+        Tool(
+            name="vault_health",
+            description=(
+                "MCP-callable structured vault health check. Returns JSON "
+                "with status (healthy/degraded/critical), APY vs benchmark, "
+                "allocation breakdown, active alerts, and recommended actions. "
+                "Designed for agent-to-agent queries."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {},
+            },
+        ),
     ]
 
 
@@ -244,7 +260,11 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     """Execute a Lido tool and return the result as MCP TextContent."""
 
-    result = _lido.handle_tool_call(name, arguments or {})
+    # vault_health is served by the monitor, not the Lido MCP server
+    if name == "vault_health":
+        result = _monitor.vault_health()
+    else:
+        result = _lido.handle_tool_call(name, arguments or {})
 
     # Normalise to string (monitor_position returns a plain string)
     if isinstance(result, str):
@@ -288,6 +308,10 @@ def _smoke_test():
     print("\n--- Calling monitor_position ---")
     res = asyncio.run(call_tool("monitor_position", {}))
     print(res[0].text[:400])
+
+    print("\n--- Calling vault_health (MCP-callable bonus tool) ---")
+    res = asyncio.run(call_tool("vault_health", {}))
+    print(res[0].text[:500])
 
     print("\nSmoke test passed.")
 

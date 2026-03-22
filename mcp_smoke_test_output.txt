@@ -1,0 +1,88 @@
+=== MCP Stdio Server — Smoke Test ===
+
+Registered 10 tools:
+  - stake_eth: Stake ETH into Lido and receive stETH. Earns ~3.5% APY via liquid stak...
+  - unstake_steth: Request withdrawal from stETH back to ETH via the Lido withdrawal queu...
+  - wrap_steth: Convert rebasing stETH to non-rebasing wstETH. Better for DeFi integra...
+  - unwrap_wsteth: Convert wstETH back to stETH....
+  - get_balance: Query current stETH and wstETH balances and total value....
+  - get_rewards: Check accumulated staking rewards and yield estimates....
+  - get_apy: Get the current Lido stETH APY and compare it against raw staking, Aav...
+  - get_governance_votes: Query active Lido DAO governance proposals from Aragon voting and Snap...
+  - monitor_position: Generate a comprehensive plain-English monitoring report for the curre...
+  - vault_health: MCP-callable structured vault health check. Returns JSON with status (...
+
+--- Calling stake_eth (dry_run) ---
+{
+  "action": "stake_eth",
+  "eth_amount": 5.0,
+  "steth_received": 5.0,
+  "exchange_rate": 1.0,
+  "current_apy": "2.42%",
+  "message": "[DRY RUN] Would stake 5.0 ETH \u2192 5.0 stETH at 2.42% APY"
+}
+
+--- Calling get_apy ---
+{
+  "lido_steth_apy": "2.42%",
+  "benchmarks": {
+    "raw_eth_staking": "3.2%",
+    "aave_eth_supply": "1.8%",
+    "reth_apy": "3.4%"
+  },
+  "lido_advantage": "Liquid staking \u2014 use stETH in DeFi while earning yield",
+  "note": "APY fluctuates based on network activity and validator performance"
+
+--- Calling get_governance_votes ---
+{
+  "action": "get_governance_votes",
+  "source": "Lido Snapshot",
+  "active_proposals": [],
+  "snapshot_space": "lido-snapshot.eth",
+  "vote_url": "https://snapshot.org/#/lido-snapshot.eth"
+}
+
+--- Calling monitor_position ---
+
+╔══════════════════════════════════════════════════╗
+║        LIDO POSITION MONITORING REPORT           ║
+║        Generated: 2026-03-22 05:03 UTC          ║
+╚══════════════════════════════════════════════════╝
+
+YOUR POSITION:
+  • stETH Balance: 0.0000 stETH
+  • wstETH Balance: 0.0000 wstETH
+  • Total Value: ~0.0000 ETH
+  • Total Staked: 0.0000 ETH
+
+YIELD PERFORMANCE:
+  • Current APY: 2.42%
+  • D
+
+--- Calling vault_health (MCP-callable bonus tool) ---
+{
+  "tool": "vault_health",
+  "status": "healthy",
+  "timestamp": "2026-03-22T05:03:03.458259",
+  "position": {
+    "total_value_eth": 50.0,
+    "yield_earned_24h_eth": 0.003315,
+    "yield_earned_24h_usd": 11.6
+  },
+  "yield": {
+    "current_apy": 2.42,
+    "benchmark_apy": 3.2,
+    "spread_vs_benchmark": -0.78,
+    "yield_floor": null,
+    "floor_breached": false
+  },
+  "allocation": {
+    "Aave": 35.0,
+    "Morpho": 25.0,
+    "Pendle": 20.0,
+    "Gearbox": 12.0,
+    "Maple": 8.0
+  },
+  "proto
+
+Smoke test passed.
