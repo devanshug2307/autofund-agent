@@ -453,6 +453,22 @@ This is a prototype for the future of autonomous AI operations:
 - **TreasuryVault:** [BaseScan](https://sepolia.basescan.org/address/0xDcb6aEdb34b7c91F3b83a0Bf61c7d84DB2f9F2bF)
 - **ServiceRegistry:** [BaseScan](https://sepolia.basescan.org/address/0xa602931E5976FA282d0887c8Bd1741a6FEfF9Dc1)
 
+## Hackathon Tracks
+
+| # | Track | Sponsor | What We Built |
+|---|-------|---------|---------------|
+| 1 | Synthesis Open Track | Synthesis | Full self-sustaining agent across DeFi, LLM, trading |
+| 2 | Best Agent on Celo | Celo | 4 contracts, 7 TXs on Celo Sepolia |
+| 3 | Let the Agent Cook — No Humans Required | Protocol Labs | 7-phase daemon, agent.json, agent_log.json |
+| 4 | Best Bankr LLM Gateway Use | Bankr | Self-funding inference, cost-optimized model selection |
+| 5 | Lido MCP | Lido | 10-tool MCP stdio server with dry_run |
+| 6 | stETH Agent Treasury | Lido | Principal-locked vault, 47 tests, yield-only withdrawal |
+| 7 | Vault Position Monitor + Alert Agent | Lido | Telegram alerts, benchmark comparison, plain-English reports |
+| 8 | Agent Services on Base | Base | ServiceRegistry with escrow, x402 payment protocol |
+| 9 | Autonomous Trading Agent | Base | Real Uniswap V3 swaps on Sepolia, P&L tracking |
+| 10 | Agentic Finance (Uniswap API) | Uniswap | 2 real onchain swaps via SwapRouter02 |
+| 11 | Agents With Receipts — ERC-8004 | Protocol Labs | ERC-8004 identity on Base Mainnet |
+
 ## Built By
 
 - **Agent:** AutoFund (Claude Opus 4.6)
