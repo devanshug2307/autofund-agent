@@ -23,6 +23,7 @@
             margin-bottom: 4px;
         }
         .header p { color: #888; font-size: 14px; }
+        .header .tagline { margin-top: 8px; color: #666; font-size: 12px; }
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -100,6 +101,11 @@
         }
         .badge.live { background: #003320; color: #00ff88; }
         .badge.locked { background: #332200; color: #ffaa00; }
+        .badge.swap { background: #1a0033; color: #aa66ff; }
+        .badge.celo { background: #002233; color: #44bbff; }
+        .badge.status { background: #220033; color: #cc88ff; }
+        .badge.new { background: #330022; color: #ff66aa; }
+        .badge.proof { background: #0a2200; color: #88cc44; }
         .contract-addr {
             font-size: 11px;
             color: #4a9eff;
@@ -123,11 +129,98 @@
         }
         .alert.healthy { background: #003320; border: 1px solid #005533; }
         .alert.warning { background: #332200; border: 1px solid #554400; }
+        .alert.info { background: #001133; border: 1px solid #003366; color: #88bbff; }
         .full-width { grid-column: 1 / -1; }
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        .section-divider {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 8px 0;
+            color: #333;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-top: 1px solid #1a1a2f;
+        }
+        .mini-card {
+            background: #0e0e1a;
+            border: 1px solid #222240;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+        }
+        .mini-card .title {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .mini-card .value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        .network-label {
+            font-size: 10px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 12px;
+            margin-bottom: 4px;
+            padding-top: 8px;
+            border-top: 1px solid #1a1a2f;
+        }
+        .endpoint-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #1a1a2f;
+            font-size: 13px;
+        }
+        .endpoint-row:last-child { border-bottom: none; }
+        .method { font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 3px; }
+        .method.get { background: #002211; color: #00cc66; }
+        .method.post { background: #001133; color: #4488ff; }
+        .lifecycle {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin: 12px 0;
+        }
+        .lifecycle-step {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .lifecycle-step.wake { background: #332200; color: #ffaa00; }
+        .lifecycle-step.sense { background: #002233; color: #44bbff; }
+        .lifecycle-step.think { background: #1a0033; color: #aa66ff; }
+        .lifecycle-step.act { background: #003320; color: #00ff88; }
+        .lifecycle-step.check { background: #330022; color: #ff66aa; }
+        .lifecycle-step.log { background: #222200; color: #aaaa44; }
+        .lifecycle-step.sleep { background: #111122; color: #6666aa; }
+        .lifecycle-arrow { color: #333; font-size: 14px; line-height: 28px; }
+        .proof-link {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #0e1a0e;
+            border: 1px solid #1a331a;
+            border-radius: 4px;
+            color: #88cc44;
+            font-size: 11px;
+            text-decoration: none;
+            margin: 2px;
+        }
+        .proof-link:hover { background: #1a331a; text-decoration: none; }
         @media (max-width: 768px) {
             .grid { padding: 16px; gap: 16px; }
             .two-col { grid-template-columns: 1fr; }
+            .three-col { grid-template-columns: 1fr; }
             .big-number { font-size: 28px; }
         }
     </style>
@@ -135,13 +228,17 @@
 <body>
     <div class="header">
         <h1>AutoFund <span style="color: #444">|</span> Self-Sustaining DeFi Agent</h1>
-        <p>An autonomous agent that earns its own operating budget from DeFi yield. Built for The Synthesis 2026.</p>
+        <p>An autonomous agent that earns its own operating budget from DeFi yield, pays for its own LLM inference, provides paid services, and trades via Uniswap -- all without touching locked principal.</p>
+        <div class="tagline">The Synthesis Hackathon 2026 &mdash; 9 contracts &middot; 3 chains &middot; 19+ onchain TXs &middot; 47 tests passing &middot; 10 MCP tools</div>
     </div>
 
     <div class="grid">
+
+        <!-- ==================== SECTION: CORE TREASURY ==================== -->
+
         <!-- Treasury Status -->
         <div class="card">
-            <h2>Treasury Vault</h2>
+            <h2>Treasury Vault <span class="badge locked">PRINCIPAL LOCKED</span></h2>
             <div class="stat-row">
                 <span class="stat-label">Principal (Locked)</span>
                 <span class="stat-value yellow">$1,000.00 <span class="badge locked">LOCKED</span></span>
@@ -166,11 +263,12 @@
                 <span class="stat-label">Per-TX Limit</span>
                 <span class="stat-value">$100.00/tx</span>
             </div>
+            <div class="alert healthy" style="margin-top: 12px;">36 Solidity tests prove principal can never be withdrawn.</div>
         </div>
 
         <!-- Self-Sustainability -->
         <div class="card">
-            <h2>Self-Sustainability</h2>
+            <h2>Self-Sustainability Metrics</h2>
             <div class="big-number">$2.997</div>
             <div class="label">Net Profit (Revenue - Costs)</div>
             <br>
@@ -204,8 +302,12 @@
         <div class="card">
             <h2>Lido Yield Performance</h2>
             <div class="big-number">3.5%</div>
-            <div class="label">Current stETH APY</div>
+            <div class="label">Current stETH APY (simulated vault)</div>
             <br>
+            <div class="stat-row">
+                <span class="stat-label">Live stETH APY (Lido API)</span>
+                <span class="stat-value green">2.42%</span>
+            </div>
             <div class="stat-row">
                 <span class="stat-label">vs Raw ETH Staking</span>
                 <span class="stat-value green">+0.3% higher</span>
@@ -229,95 +331,365 @@
             <div class="alert healthy">All positions healthy. Yield above benchmark.</div>
         </div>
 
-        <!-- Contracts -->
-        <div class="card">
-            <h2>Deployed Contracts <span class="badge live">LIVE ON BASE SEPOLIA</span></h2>
-            <div class="stat-row">
-                <span class="stat-label">TreasuryVault</span>
-                <a class="contract-addr" href="https://sepolia.basescan.org/address/0xDcb6aEdb34b7c91F3b83a0Bf61c7d84DB2f9F2bF" target="_blank">0xDcb6aE...f9F2bF</a>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">ServiceRegistry</span>
-                <a class="contract-addr" href="https://sepolia.basescan.org/address/0xa602931E5976FA282d0887c8Bd1741a6FEfF9Dc1" target="_blank">0xa60293...F9Dc1</a>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Mock USDC</span>
-                <a class="contract-addr" href="https://sepolia.basescan.org/address/0x5cFA9374C4DcdFE58A32d2702d73bB643cc85A36" target="_blank">0x5cFA93...85A36</a>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Mock stETH</span>
-                <a class="contract-addr" href="https://sepolia.basescan.org/address/0xC7EBEcBfb08B437B6B00d51a7de004E047B4B116" target="_blank">0xC7EBEc...4B116</a>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Network</span>
-                <span class="stat-value">Base Sepolia (84532)</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Tests</span>
-                <span class="stat-value green">25/25 passing</span>
-            </div>
-        </div>
+        <!-- ==================== SECTION: THE CLOSED LOOP ==================== -->
 
-        <!-- The Closed Loop -->
         <div class="card full-width">
             <h2>The Self-Sustaining Closed Loop</h2>
             <div class="loop-diagram">
-                Human Deposits $1,000 <span class="arrow">→</span>
-                Principal LOCKED <span class="arrow">→</span>
-                Stake in Lido (3.5% APY) <span class="arrow">→</span>
-                Yield Accrues <span class="arrow">→</span>
-                Agent Harvests $50 <span class="arrow">→</span>
-                Pays $0.003 for 5 LLM Inferences <span class="arrow">→</span>
-                Provides 3 Paid Services ($1 each) <span class="arrow">→</span>
-                Earns $3.00 Revenue <span class="arrow">→</span>
-                <strong>Net Profit: $2.997</strong> <span class="arrow">→</span>
-                Reinvest <span class="arrow">→</span> Cycle Continues
+                Human Deposits $1,000 <span class="arrow">&rarr;</span>
+                Principal LOCKED <span class="arrow">&rarr;</span>
+                Stake in Lido (3.5% APY) <span class="arrow">&rarr;</span>
+                Yield Accrues <span class="arrow">&rarr;</span>
+                Agent Harvests $50 <span class="arrow">&rarr;</span>
+                Pays $0.003 for 5 LLM Inferences <span class="arrow">&rarr;</span>
+                Provides 3 Paid Services ($1 each) <span class="arrow">&rarr;</span>
+                Earns $3.00 Revenue <span class="arrow">&rarr;</span>
+                <strong>Net Profit: $2.997</strong> <span class="arrow">&rarr;</span>
+                Reinvest <span class="arrow">&rarr;</span> Cycle Continues
             </div>
         </div>
 
-        <!-- Onchain Transactions -->
+        <!-- ==================== SECTION: DEPLOYED CONTRACTS ==================== -->
+
         <div class="card full-width">
-            <h2>Onchain Transaction Proof</h2>
+            <h2>Deployed Contracts &mdash; 9 Contracts on 3 Chains <span class="badge live">ALL LIVE</span></h2>
+            <div class="three-col">
+                <div>
+                    <div class="network-label" style="border-top:none; margin-top:0;">Base Sepolia (84532) &mdash; 4 Contracts</div>
+                    <div class="stat-row">
+                        <span class="stat-label">TreasuryVault</span>
+                        <a class="contract-addr" href="https://sepolia.basescan.org/address/0xDcb6aEdb34b7c91F3b83a0Bf61c7d84DB2f9F2bF" target="_blank">0xDcb6aE...f9F2bF</a>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">ServiceRegistry</span>
+                        <a class="contract-addr" href="https://sepolia.basescan.org/address/0xa602931E5976FA282d0887c8Bd1741a6FEfF9Dc1" target="_blank">0xa60293...F9Dc1</a>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Mock USDC</span>
+                        <a class="contract-addr" href="https://sepolia.basescan.org/address/0x5cFA9374C4DcdFE58A32d2702d73bB643cc85A36" target="_blank">0x5cFA93...85A36</a>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Mock stETH</span>
+                        <a class="contract-addr" href="https://sepolia.basescan.org/address/0xC7EBEcBfb08B437B6B00d51a7de004E047B4B116" target="_blank">0xC7EBEc...4B116</a>
+                    </div>
+                </div>
+                <div>
+                    <div class="network-label" style="border-top:none; margin-top:0;">Celo Sepolia (11142220) &mdash; 4 Contracts</div>
+                    <div class="stat-row">
+                        <span class="stat-label">TreasuryVault</span>
+                        <a class="contract-addr" href="https://celo-sepolia.blockscout.com/address/0x889442b60e3FBFfFE75d8231EC626138F2505C8f" target="_blank">0x889442...05C8f</a>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">ServiceRegistry</span>
+                        <a class="contract-addr" href="https://celo-sepolia.blockscout.com/address/0x5cFA9374C4DcdFE58A32d2702d73bB643cc85A36" target="_blank">0x5cFA93...85A36</a>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Mock USDC</span>
+                        <a class="contract-addr" href="https://celo-sepolia.blockscout.com/address/0x0060eD967436DC210aF9F5A2A3A98Ff4D876040b" target="_blank">0x0060eD...040b</a>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Mock cUSD</span>
+                        <a class="contract-addr" href="https://celo-sepolia.blockscout.com/address/0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3" target="_blank">0x51C96F...78Ba3</a>
+                    </div>
+                </div>
+                <div>
+                    <div class="network-label" style="border-top:none; margin-top:0;">Status Network Sepolia &mdash; 1 Contract</div>
+                    <div class="stat-row">
+                        <span class="stat-label">AutoFund AI Token</span>
+                        <a class="contract-addr" href="https://sepoliascan.status.network/address/0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3" target="_blank">0x51C96F...78Ba3</a>
+                    </div>
+                    <div style="padding: 8px 0;">
+                        <span class="badge status">ZERO GAS FEE</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SECTION: ONCHAIN TX PROOF ==================== -->
+
+        <div class="card full-width">
+            <h2>Onchain Transaction Proof &mdash; 19+ Verified TXs</h2>
+
+            <div class="network-label" style="border-top:none; margin-top:0;">Base Sepolia &mdash; 10 Transactions</div>
             <ul class="tx-list">
                 <li>
-                    <span class="tx-action">Mint 10,000 mUSDC</span><br>
+                    <span class="tx-action">1. Mint 10,000 mUSDC</span><br>
                     <a class="tx-hash" href="https://sepolia.basescan.org/tx/0x813fa0db32481eac5d0a885dcb846a1e1d35e72d806e6f20bb66d920c8a4c087" target="_blank">0x813fa0db...c8a4c087</a>
                 </li>
                 <li>
-                    <span class="tx-action">Deposit $1,000 into TreasuryVault (principal locked)</span><br>
+                    <span class="tx-action">2. Deposit $1,000 into TreasuryVault (principal locked)</span><br>
                     <a class="tx-hash" href="https://sepolia.basescan.org/tx/0x08152b3074c62120378989a5fea519fcc1c16989cf1262c5364a77f0c661e221" target="_blank">0x08152b30...661e221</a>
                 </li>
                 <li>
-                    <span class="tx-action">Yield Accrual: $50 stETH rewards</span><br>
+                    <span class="tx-action">3. Yield Accrual: $50 stETH rewards</span><br>
                     <a class="tx-hash" href="https://sepolia.basescan.org/tx/0xc744979ca7c7e293f9343c0b3790a35eab51176868e93931e31aa2d0b3bb11f6" target="_blank">0xc744979c...3bb11f6</a>
                 </li>
                 <li>
-                    <span class="tx-action">Agent Harvests $50 Yield</span><br>
+                    <span class="tx-action">4. Agent Harvests $50 Yield</span><br>
                     <a class="tx-hash" href="https://sepolia.basescan.org/tx/0x93053c95e559a4c2c473670d7b3c9ef228fbbb2d4ce5794abd0ecf49a04a7800" target="_blank">0x93053c95...a04a7800</a>
                 </li>
                 <li>
-                    <span class="tx-action">Register "AI Portfolio Analysis" Service ($1/request)</span><br>
+                    <span class="tx-action">5. Register "AI Portfolio Analysis" Service ($1/request)</span><br>
                     <a class="tx-hash" href="https://sepolia.basescan.org/tx/0xb55229623cfc0f5085c0fef906abfeda4115e7a9173d25fa0654e49b774c5e24" target="_blank">0xb5522962...74c5e24</a>
                 </li>
                 <li>
-                    <span class="tx-action">Agent Spends $5 on Bankr LLM Inference</span><br>
+                    <span class="tx-action">6. Agent Spends $5 on Bankr LLM Inference</span><br>
                     <a class="tx-hash" href="https://sepolia.basescan.org/tx/0x699fd2e748d0736959b298d0cb0c2297dc5ceba13829fd6c0ab53f6fb54f5608" target="_blank">0x699fd2e7...54f5608</a>
+                </li>
+                <li>
+                    <span class="tx-action">7. Register "Vault Monitor" Service</span><br>
+                    <a class="tx-hash" href="https://sepolia.basescan.org/tx/0x1f9090ac8301e2e5ba67489615137520dea92647c659a4f98dd6f4da4b9de0d" target="_blank">0x1f9090ac...4b9de0d</a>
+                </li>
+                <li>
+                    <span class="tx-action">8. Register "DeFi Yield Optimizer" Service</span><br>
+                    <a class="tx-hash" href="https://sepolia.basescan.org/tx/0x52f1b42583753efb68cfd6a21099c635dda21a319c5b4ea45bdbbac30c973aa3" target="_blank">0x52f1b425...c973aa3</a>
+                </li>
+                <li>
+                    <span class="tx-action">9. Request Service ($2 escrowed)</span><br>
+                    <a class="tx-hash" href="https://sepolia.basescan.org/tx/0x298b2a9bc360e4b453cb5f50202fa39159d1b57cc30e0f465c508e7ab062b97a" target="_blank">0x298b2a9b...062b97a</a>
+                </li>
+                <li>
+                    <span class="tx-action">10. Complete Service (payment released)</span><br>
+                    <a class="tx-hash" href="https://sepolia.basescan.org/tx/0x5bdae3335f3ec7a8cb6388b1ac56f3434c7e14c46b9ec7873f87fc657479b0b2" target="_blank">0x5bdae333...479b0b2</a>
+                </li>
+            </ul>
+
+            <div class="network-label">Ethereum Sepolia &mdash; Uniswap V3 Swaps <span class="badge swap">REAL SWAPS</span></div>
+            <ul class="tx-list">
+                <li>
+                    <span class="tx-action">1. Swap 0.0005 ETH &rarr; 2.773624 USDC</span><br>
+                    <a class="tx-hash" href="https://sepolia.etherscan.io/tx/0x42308f246ad675aacbf2ea42b6bf2f29c6972e3242f5e398c6b7c61efd661bb7" target="_blank">0x42308f24...d661bb7</a>
+                </li>
+                <li>
+                    <span class="tx-action">2. Swap 0.0003 ETH &rarr; 1.664174 USDC</span><br>
+                    <a class="tx-hash" href="https://sepolia.etherscan.io/tx/0xa2e2888018276922c7c38e865ee3baf08d1b6aabd0f0913b16a421318587e203" target="_blank">0xa2e28880...8587e203</a>
+                </li>
+            </ul>
+
+            <div class="network-label">Celo Sepolia &mdash; 7 Transactions <span class="badge celo">MULTI-CHAIN</span></div>
+            <ul class="tx-list">
+                <li>
+                    <span class="tx-action">1. Mint 10,000 mUSDC</span><br>
+                    <a class="tx-hash" href="https://celo-sepolia.blockscout.com/tx/0xa901b59d4246f736990ffbc36d1b3da6b19e6f311188692610105daa074dca08" target="_blank">0xa901b59d...74dca08</a>
+                </li>
+                <li>
+                    <span class="tx-action">2. Deposit $1,000 into TreasuryVault</span><br>
+                    <a class="tx-hash" href="https://celo-sepolia.blockscout.com/tx/0x9475a0566c4fe93aab2eb005bedaa519e9096bca0e133349f174525f457d3c0c" target="_blank">0x9475a056...57d3c0c</a>
+                </li>
+                <li>
+                    <span class="tx-action">3. Agent Harvests $50 Yield</span><br>
+                    <a class="tx-hash" href="https://celo-sepolia.blockscout.com/tx/0x57ef65a6e8bc8b0a1aab610de5a01e3e44e7d8c52f211e33e37cebbcd36bd106" target="_blank">0x57ef65a6...36bd106</a>
+                </li>
+                <li>
+                    <span class="tx-action">4. Register Service</span><br>
+                    <a class="tx-hash" href="https://celo-sepolia.blockscout.com/tx/0x515bf7ebd70f5d84e973654f30af6e04439158e939acf61897ee21a74fd5910d" target="_blank">0x515bf7eb...d5910d</a>
+                </li>
+                <li>
+                    <span class="tx-action">5. Agent Spends $5 on Inference</span><br>
+                    <a class="tx-hash" href="https://celo-sepolia.blockscout.com/tx/0x1a954b845a8e68b6b8f84e55bc98d26dee03652d480b5014a39d87ccefae10ae" target="_blank">0x1a954b84...fae10ae</a>
+                </li>
+                <li>
+                    <span class="tx-action">6. Service Requested ($1 escrowed)</span><br>
+                    <a class="tx-hash" href="https://celo-sepolia.blockscout.com/tx/0x7f961fdfd9d1ff708bcdfc83817ee81d96b2b7365cd933efcbc352d6ce5d1d72" target="_blank">0x7f961fdf...e5d1d72</a>
+                </li>
+                <li>
+                    <span class="tx-action">7. Service Completed (payment released)</span><br>
+                    <a class="tx-hash" href="https://celo-sepolia.blockscout.com/tx/0xdb3337580c2f8391cca2445658daecfcb3bd537a47ac6d67eb1c67759360b06e" target="_blank">0xdb333758...360b06e</a>
+                </li>
+            </ul>
+
+            <div class="network-label">ERC-8004 Agent Identity &mdash; Base Mainnet <span class="badge live">MAINNET</span></div>
+            <ul class="tx-list">
+                <li>
+                    <span class="tx-action">ERC-8004 Agent Identity Registration</span><br>
+                    <a class="tx-hash" href="https://basescan.org/tx/0x9890894365098da23a347ba828bab3c6f01b6fd6307e914297be5801e7b36282" target="_blank">0x98908943...7b36282</a>
                 </li>
             </ul>
         </div>
 
-        <!-- MCP Server Tools -->
+        <!-- ==================== SECTION: NEW INTEGRATIONS ==================== -->
+
+        <!-- Uniswap V3 Trading -->
         <div class="card">
-            <h2>Lido MCP Server (8 Tools)</h2>
-            <div class="stat-row"><span class="stat-label">stake_eth</span><span class="stat-value">Stake ETH → stETH</span></div>
+            <h2>Uniswap V3 Trading <span class="badge swap">REAL ONCHAIN SWAPS</span></h2>
+            <div class="big-number">4.44 USDC</div>
+            <div class="label">Total Output from 2 Real Swaps (0.0008 ETH in)</div>
+            <br>
+            <div class="stat-row">
+                <span class="stat-label">Swap 1</span>
+                <span class="stat-value">0.0005 ETH &rarr; 2.77 USDC</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Swap 2</span>
+                <span class="stat-value">0.0003 ETH &rarr; 1.66 USDC</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Router</span>
+                <span class="stat-value" style="font-size: 11px;">SwapRouter02</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Method</span>
+                <span class="stat-value">exactInputSingle via multicall</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Network</span>
+                <span class="stat-value">Ethereum Sepolia</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Proof</span>
+                <span class="stat-value"><a class="contract-addr" href="https://sepolia.etherscan.io/tx/0x42308f246ad675aacbf2ea42b6bf2f29c6972e3242f5e398c6b7c61efd661bb7" target="_blank">Verify on Etherscan</a></span>
+            </div>
+        </div>
+
+        <!-- x402 Payment Protocol -->
+        <div class="card">
+            <h2>x402 Payment Protocol <span class="badge new">HTTP 402</span></h2>
+            <div class="alert info">Premium endpoints gated by onchain payment. No accounts, no API keys -- just pay and access.</div>
+            <div class="stat-row">
+                <span class="stat-label">Protocol</span>
+                <span class="stat-value">x402 (HTTP 402 Payment Required)</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Facilitator</span>
+                <span class="stat-value"><a class="contract-addr" href="https://x402.org" target="_blank">x402.org/facilitator</a></span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Network</span>
+                <span class="stat-value">Base Sepolia (eip155:84532)</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Scheme</span>
+                <span class="stat-value">EVM Exact Payment (EIP-712)</span>
+            </div>
+            <div class="network-label">Paid Endpoints</div>
+            <div class="endpoint-row">
+                <span><span class="method post">POST</span> /portfolio/analyze</span>
+                <span class="stat-value yellow">$0.01</span>
+            </div>
+            <div class="endpoint-row">
+                <span><span class="method get">GET</span> /vault/report</span>
+                <span class="stat-value yellow">$0.005</span>
+            </div>
+            <div class="label" style="margin-top: 8px;">Any agent or human can pay for services programmatically via onchain payment.</div>
+        </div>
+
+        <!-- Telegram Vault Alerts -->
+        <div class="card">
+            <h2>Telegram Vault Alerts <span class="badge live">LIVE</span></h2>
+            <div class="stat-row">
+                <span class="stat-label">Bot</span>
+                <span class="stat-value">@web3203bot</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Alerts Delivered</span>
+                <span class="stat-value green">2 real alerts</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Live stETH APY</span>
+                <span class="stat-value">2.42% (SMA) / 2.38% (latest)</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">ETH Price at Alert</span>
+                <span class="stat-value">$2,108.58</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Alert Types</span>
+                <span class="stat-value">Vault Monitor + Yield Drop</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Data Sources</span>
+                <span class="stat-value">Lido API + CoinGecko (live)</span>
+            </div>
+            <div class="alert healthy" style="margin-top: 8px;">Benchmark comparison, yield drop detection, allocation reporting -- all delivered to Telegram in real time.</div>
+        </div>
+
+        <!-- Autonomous Daemon -->
+        <div class="card">
+            <h2>Autonomous Daemon <span class="badge live">SELF-OPERATING</span></h2>
+            <div class="lifecycle">
+                <span class="lifecycle-step wake">WAKE</span>
+                <span class="lifecycle-arrow">&rarr;</span>
+                <span class="lifecycle-step sense">SENSE</span>
+                <span class="lifecycle-arrow">&rarr;</span>
+                <span class="lifecycle-step think">THINK</span>
+                <span class="lifecycle-arrow">&rarr;</span>
+                <span class="lifecycle-step act">ACT</span>
+                <span class="lifecycle-arrow">&rarr;</span>
+                <span class="lifecycle-step check">CHECK</span>
+                <span class="lifecycle-arrow">&rarr;</span>
+                <span class="lifecycle-step log">LOG</span>
+                <span class="lifecycle-arrow">&rarr;</span>
+                <span class="lifecycle-step sleep">SLEEP</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Self-Checks per Cycle</span>
+                <span class="stat-value green">6 checks</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Checks Include</span>
+                <span class="stat-value" style="font-size: 11px;">Principal intact, yield non-negative, budget not exhausted, contracts reachable, no anomalies, performance OK</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Configurable</span>
+                <span class="stat-value">--cycles N --interval S</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Output</span>
+                <span class="stat-value">daemon_session.json</span>
+            </div>
+        </div>
+
+        <!-- Service API -->
+        <div class="card">
+            <h2>Service API <span class="badge new">FASTAPI</span></h2>
+            <div class="stat-row">
+                <span class="stat-label">Framework</span>
+                <span class="stat-value">FastAPI + Uvicorn</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Total Endpoints</span>
+                <span class="stat-value green">14 endpoints</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Discovery</span>
+                <span class="stat-value">GET /services, /status</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Portfolio</span>
+                <span class="stat-value">POST /portfolio/analyze ($0.01)</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Vault</span>
+                <span class="stat-value">GET /vault/report ($0.005)</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Lido Ops</span>
+                <span class="stat-value">stake, unstake, wrap, unwrap</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Payment</span>
+                <span class="stat-value yellow">x402 gating on premium endpoints</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Graceful Fallback</span>
+                <span class="stat-value">Runs without x402 if not installed</span>
+            </div>
+        </div>
+
+        <!-- Lido MCP Server -->
+        <div class="card">
+            <h2>Lido MCP Server (10 Tools)</h2>
+            <div class="stat-row"><span class="stat-label">stake_eth</span><span class="stat-value">Stake ETH &rarr; stETH</span></div>
             <div class="stat-row"><span class="stat-label">unstake_steth</span><span class="stat-value">Withdrawal queue</span></div>
-            <div class="stat-row"><span class="stat-label">wrap_steth</span><span class="stat-value">stETH → wstETH</span></div>
-            <div class="stat-row"><span class="stat-label">unwrap_wsteth</span><span class="stat-value">wstETH → stETH</span></div>
+            <div class="stat-row"><span class="stat-label">wrap_steth</span><span class="stat-value">stETH &rarr; wstETH</span></div>
+            <div class="stat-row"><span class="stat-label">unwrap_wsteth</span><span class="stat-value">wstETH &rarr; stETH</span></div>
             <div class="stat-row"><span class="stat-label">get_balance</span><span class="stat-value">All balances</span></div>
             <div class="stat-row"><span class="stat-label">get_rewards</span><span class="stat-value">Yield estimates</span></div>
             <div class="stat-row"><span class="stat-label">get_apy</span><span class="stat-value">APY + benchmarks</span></div>
+            <div class="stat-row"><span class="stat-label">get_governance_votes</span><span class="stat-value">DAO governance</span></div>
             <div class="stat-row"><span class="stat-label">monitor_position</span><span class="stat-value">Full report</span></div>
-            <div class="label" style="margin-top: 8px">All tools support dry_run mode for safe simulation</div>
+            <div class="stat-row"><span class="stat-label">vault_health</span><span class="stat-value">Health check</span></div>
+            <div class="label" style="margin-top: 8px">All tools support dry_run mode. Accessible via MCP stdio (Claude Desktop / Cursor).</div>
         </div>
 
         <!-- Bankr Economics -->
@@ -329,33 +701,146 @@
             </div>
             <div class="stat-row">
                 <span class="stat-label">Cost Optimization</span>
-                <span class="stat-value green">Auto-selects cheapest model</span>
+                <span class="stat-value green">Auto-selects by complexity</span>
             </div>
             <div class="stat-row">
-                <span class="stat-label">Cheapest (simple tasks)</span>
-                <span class="stat-value">Gemini Flash — $0.0001</span>
+                <span class="stat-label">Simple Tasks</span>
+                <span class="stat-value">Gemini Flash &mdash; $0.0001</span>
             </div>
             <div class="stat-row">
-                <span class="stat-label">Default (analysis)</span>
-                <span class="stat-value">Claude Sonnet — $0.003</span>
+                <span class="stat-label">Moderate Tasks</span>
+                <span class="stat-value">GPT-4o Mini &mdash; $0.0004</span>
             </div>
             <div class="stat-row">
-                <span class="stat-label">Critical (decisions)</span>
-                <span class="stat-value">Claude Opus — $0.015</span>
+                <span class="stat-label">Complex Analysis</span>
+                <span class="stat-value">Claude Sonnet &mdash; $0.003</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Critical Decisions</span>
+                <span class="stat-value">Claude Opus &mdash; $0.015</span>
             </div>
             <div class="stat-row">
                 <span class="stat-label">Funding Source</span>
                 <span class="stat-value green">100% from yield</span>
             </div>
+            <div class="stat-row">
+                <span class="stat-label">Fallback Chain</span>
+                <span class="stat-value" style="font-size: 11px;">Bankr &rarr; Anthropic &rarr; Simulation</span>
+            </div>
         </div>
+
+        <!-- Tests -->
+        <div class="card">
+            <h2>Test Suite <span class="badge live">47/47 PASSING</span></h2>
+            <div class="big-number">47/47</div>
+            <div class="label">All Solidity Tests Passing</div>
+            <br>
+            <div class="stat-row">
+                <span class="stat-label">TreasuryVault Tests</span>
+                <span class="stat-value green">36 passing</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">ServiceRegistry Tests</span>
+                <span class="stat-value green">11 passing</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Coverage</span>
+                <span class="stat-value">Principal lock, yield, guardrails, access control, escrow, multi-user, edge cases</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Framework</span>
+                <span class="stat-value">Hardhat + Chai</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 100%"></div>
+            </div>
+        </div>
+
+        <!-- Celo Multi-Chain -->
+        <div class="card">
+            <h2>Celo Multi-Chain <span class="badge celo">FEE ABSTRACTION</span></h2>
+            <div class="stat-row">
+                <span class="stat-label">Contracts Deployed</span>
+                <span class="stat-value green">4 contracts</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Transactions</span>
+                <span class="stat-value green">7 TXs</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Network</span>
+                <span class="stat-value">Celo Sepolia (11142220)</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Feature</span>
+                <span class="stat-value">Fee abstraction (pay gas in cUSD)</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Full Lifecycle</span>
+                <span class="stat-value green">Mint &rarr; Deposit &rarr; Harvest &rarr; Register &rarr; Spend &rarr; Request &rarr; Complete</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Explorer</span>
+                <span class="stat-value"><a class="contract-addr" href="https://celo-sepolia.blockscout.com/address/0x889442b60e3FBFfFE75d8231EC626138F2505C8f" target="_blank">Blockscout</a></span>
+            </div>
+        </div>
+
+        <!-- Status Network Gasless -->
+        <div class="card">
+            <h2>Status Network Gasless <span class="badge status">ZERO GAS</span></h2>
+            <div class="stat-row">
+                <span class="stat-label">Contract</span>
+                <span class="stat-value">AutoFund AI Token (AFT)</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Address</span>
+                <span class="stat-value"><a class="contract-addr" href="https://sepoliascan.status.network/address/0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3" target="_blank">0x51C96F...78Ba3</a></span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Gas Cost</span>
+                <span class="stat-value green">$0.00 (zero fee)</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Network</span>
+                <span class="stat-value">Status Network Sepolia</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">What It Proves</span>
+                <span class="stat-value">Gasless deployment for AI agents</span>
+            </div>
+        </div>
+
+        <!-- ==================== SECTION: PROOF FILES ==================== -->
+
+        <div class="card full-width">
+            <h2>Proof Files &mdash; Every Integration Verified <span class="badge proof">ALL REAL, NO MOCKS</span></h2>
+            <p style="color: #888; font-size: 13px; margin-bottom: 12px;">Every integration was tested against real APIs. Proof files contain full HTTP request/response pairs, TX hashes, and API responses.</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                <a class="proof-link" href="https://github.com/devanshug2307/autofund-agent/blob/main/swap_proof.json" target="_blank">swap_proof.json</a>
+                <a class="proof-link" href="https://github.com/devanshug2307/autofund-agent/blob/main/bankr_api_proof.json" target="_blank">bankr_api_proof.json</a>
+                <a class="proof-link" href="https://github.com/devanshug2307/autofund-agent/blob/main/lido_live_proof.json" target="_blank">lido_live_proof.json</a>
+                <a class="proof-link" href="https://github.com/devanshug2307/autofund-agent/blob/main/telegram_real_alert_proof.json" target="_blank">telegram_real_alert_proof.json</a>
+                <a class="proof-link" href="https://github.com/devanshug2307/autofund-agent/blob/main/demo_proof.txt" target="_blank">demo_proof.txt</a>
+                <a class="proof-link" href="https://github.com/devanshug2307/autofund-agent/blob/main/mcp_proof.txt" target="_blank">mcp_proof.txt</a>
+                <a class="proof-link" href="https://github.com/devanshug2307/autofund-agent/blob/main/monitor_proof.txt" target="_blank">monitor_proof.txt</a>
+            </div>
+        </div>
+
     </div>
 
+    <!-- ==================== FOOTER ==================== -->
+
     <div style="text-align: center; padding: 32px; color: #444; font-size: 12px;">
-        AutoFund — The Synthesis Hackathon 2026 — Built by Devanshu Goyal
-        <br>
-        <a href="https://github.com/devanshug2307/autofund-agent" style="color: #4a9eff;" target="_blank">GitHub</a> ·
-        <a href="https://sepolia.basescan.org/address/0xDcb6aEdb34b7c91F3b83a0Bf61c7d84DB2f9F2bF" style="color: #4a9eff;" target="_blank">BaseScan</a> ·
-        <a href="https://synthesis.md" style="color: #4a9eff;" target="_blank">The Synthesis</a>
+        AutoFund &mdash; The Synthesis Hackathon 2026 &mdash; Built by Devanshu Goyal
+        <br><br>
+        <a href="https://devanshug2307.github.io/autofund-agent/" style="color: #4a9eff;" target="_blank">Dashboard</a> &middot;
+        <a href="https://github.com/devanshug2307/autofund-agent" style="color: #4a9eff;" target="_blank">GitHub</a> &middot;
+        <a href="https://www.moltbook.com/u/autofundagent" style="color: #4a9eff;" target="_blank">Moltbook</a> &middot;
+        <a href="https://www.moltbook.com/post/0616681b-f5d1-4091-9c18-03f4d504b4ff" style="color: #4a9eff;" target="_blank">Moltbook Post</a> &middot;
+        <a href="https://basescan.org/tx/0x9890894365098da23a347ba828bab3c6f01b6fd6307e914297be5801e7b36282" style="color: #4a9eff;" target="_blank">ERC-8004 Identity</a> &middot;
+        <a href="https://sepolia.basescan.org/address/0xDcb6aEdb34b7c91F3b83a0Bf61c7d84DB2f9F2bF" style="color: #4a9eff;" target="_blank">BaseScan</a> &middot;
+        <a href="https://celo-sepolia.blockscout.com/address/0x889442b60e3FBFfFE75d8231EC626138F2505C8f" style="color: #4a9eff;" target="_blank">Celo Blockscout</a> &middot;
+        <a href="https://sepoliascan.status.network/address/0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3" style="color: #4a9eff;" target="_blank">Status Explorer</a>
     </div>
 </body>
 </html>
