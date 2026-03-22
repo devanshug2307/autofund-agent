@@ -1,0 +1,181 @@
+{
+  "agent_name": "AutoFund",
+  "version": "1.0.0",
+  "description": "Self-sustaining DeFi agent that earns its own operating budget from yield, pays for its own compute, trades autonomously, and provides paid financial services — without ever touching the principal.",
+  "erc8004_identity": {
+    "standard": "ERC-8004",
+    "registration_tx": "https://basescan.org/tx/0x9890894365098da23a347ba828bab3c6f01b6fd6307e914297be5801e7b36282",
+    "chain": "Base Mainnet",
+    "chain_id": 8453
+  },
+  "operator": {
+    "wallet": "0x54eeFbb7b3F701eEFb7fa99473A60A6bf5fE16D7",
+    "name": "Devanshu Goyal",
+    "contact": "https://x.com/devanshugoyal23"
+  },
+  "supported_tools": [
+    {
+      "name": "stake_eth",
+      "description": "Stake ETH into Lido and receive stETH",
+      "source": "src/mcp_server.py",
+      "protocol": "MCP"
+    },
+    {
+      "name": "unstake_steth",
+      "description": "Request withdrawal from stETH to ETH via Lido withdrawal queue",
+      "source": "src/mcp_server.py",
+      "protocol": "MCP"
+    },
+    {
+      "name": "wrap_steth",
+      "description": "Convert rebasing stETH to non-rebasing wstETH for DeFi use",
+      "source": "src/mcp_server.py",
+      "protocol": "MCP"
+    },
+    {
+      "name": "unwrap_wsteth",
+      "description": "Convert wstETH back to stETH",
+      "source": "src/mcp_server.py",
+      "protocol": "MCP"
+    },
+    {
+      "name": "get_balance",
+      "description": "Query current stETH and wstETH balances and total value",
+      "source": "src/mcp_server.py",
+      "protocol": "MCP"
+    },
+    {
+      "name": "get_rewards",
+      "description": "Check accumulated staking rewards and yield estimates",
+      "source": "src/mcp_server.py",
+      "protocol": "MCP"
+    },
+    {
+      "name": "get_apy",
+      "description": "Get current Lido APY and compare with alternative yield sources",
+      "source": "src/mcp_server.py",
+      "protocol": "MCP"
+    },
+    {
+      "name": "get_governance_votes",
+      "description": "Query active Lido DAO governance proposals from Aragon and Snapshot",
+      "source": "src/mcp_server.py",
+      "protocol": "MCP"
+    },
+    {
+      "name": "monitor_position",
+      "description": "Generate plain English Lido position monitoring report",
+      "source": "src/mcp_server.py",
+      "protocol": "MCP"
+    },
+    {
+      "name": "get_quote",
+      "description": "Get swap quote from Uniswap Trading API",
+      "source": "src/uniswap_trader.py",
+      "protocol": "REST"
+    },
+    {
+      "name": "analyze_and_trade",
+      "description": "Execute trade based on LLM-powered market signal analysis",
+      "source": "src/uniswap_trader.py",
+      "protocol": "REST"
+    },
+    {
+      "name": "get_pnl",
+      "description": "Calculate current P&L from autonomous trading",
+      "source": "src/uniswap_trader.py",
+      "protocol": "internal"
+    },
+    {
+      "name": "bankr_chat",
+      "description": "Self-funded LLM inference via Bankr API with cost-optimized model selection",
+      "source": "src/bankr_integration.py",
+      "protocol": "REST"
+    },
+    {
+      "name": "self_check",
+      "description": "Post-cycle verification of treasury, yield, budget, and vault health",
+      "source": "src/self_check.py",
+      "protocol": "internal"
+    },
+    {
+      "name": "check_treasury_status",
+      "description": "Read TreasuryVault on-chain status: principal, yield, spend history",
+      "source": "src/agent.py",
+      "protocol": "RPC"
+    },
+    {
+      "name": "harvest_yield",
+      "description": "Withdraw accrued yield from TreasuryVault (principal stays locked)",
+      "source": "src/agent.py",
+      "protocol": "RPC"
+    }
+  ],
+  "tech_stack": {
+    "runtime": "Python 3.12",
+    "smart_contracts": "Solidity 0.8.x (Hardhat)",
+    "llm_gateway": "Bankr API (20+ models: Claude, GPT, Gemini)",
+    "yield_source": "Lido stETH (~3.5% APY via eth-api.lido.fi)",
+    "trading": "Uniswap Trading API v1 + CoinGecko price feed",
+    "chains": ["Base Sepolia", "Celo Sepolia", "Base Mainnet (ERC-8004)"],
+    "protocols": ["MCP (Model Context Protocol)", "ERC-20", "ERC-8004"],
+    "testing": "Hardhat + 47 Solidity tests",
+    "web3_library": "ethers.js / httpx RPC"
+  },
+  "smart_contracts": {
+    "TreasuryVault": {
+      "network": "Base Sepolia",
+      "address": "0xDcb6aEdb34b7c91F3b83a0Bf61c7d84DB2f9F2bF",
+      "verified": true,
+      "functions": ["deposit()", "harvestYield()", "spend()", "getStatus()"],
+      "guardrails": {
+        "max_per_tx": "$100",
+        "max_per_day": "$500",
+        "principal_locked": true
+      }
+    },
+    "ServiceRegistry": {
+      "network": "Base Sepolia",
+      "address": "0xa602931E5976FA282d0887c8Bd1741a6FEfF9Dc1",
+      "verified": true,
+      "functions": ["registerService()", "requestService()", "completeService()"]
+    },
+    "MockUSDC": {
+      "network": "Base Sepolia",
+      "address": "0x5cFA9374C4DcdFE58A32d2702d73bB643cc85A36",
+      "verified": true
+    },
+    "MockStETH": {
+      "network": "Base Sepolia",
+      "address": "0xC7EBEcBfb08B437B6B00d51a7de004E047B4B116",
+      "verified": true
+    }
+  },
+  "compute_constraints": {
+    "daemon_cycle_interval": "300s (5 min default)",
+    "inference_cost_per_call": "$0.0006 average",
+    "budget_source": "yield from TreasuryVault (never principal)",
+    "max_daily_inference_budget": "$0.50",
+    "model_selection": "cost-optimized per task complexity (Gemini Flash for simple, Claude Sonnet for analysis, Opus for critical)",
+    "self_sustainability_ratio": "revenue $3.00 / cost $0.003 = 1000x"
+  },
+  "task_categories": [
+    "treasury_management",
+    "yield_harvesting",
+    "market_analysis",
+    "autonomous_trading",
+    "portfolio_analysis_service",
+    "vault_monitoring",
+    "defi_yield_optimization",
+    "self_funded_inference",
+    "on_chain_service_marketplace"
+  ],
+  "daemon_lifecycle": ["WAKE", "SENSE", "THINK", "ACT", "CHECK", "LOG", "SLEEP"],
+  "links": {
+    "dashboard": "https://devanshug2307.github.io/autofund-agent/",
+    "github": "https://github.com/devanshug2307/autofund-agent",
+    "moltbook": "https://www.moltbook.com/u/autofundagent",
+    "treasury_vault": "https://sepolia.basescan.org/address/0xDcb6aEdb34b7c91F3b83a0Bf61c7d84DB2f9F2bF",
+    "service_registry": "https://sepolia.basescan.org/address/0xa602931E5976FA282d0887c8Bd1741a6FEfF9Dc1"
+  }
+}
