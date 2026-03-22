@@ -6,6 +6,10 @@
 
 **Live Dashboard:** [devanshug2307.github.io/autofund-agent](https://devanshug2307.github.io/autofund-agent/)
 
+![AutoFund Dashboard — Treasury, Sustainability, Lido Yield](dashboard_screenshot_1.png)
+
+![AutoFund Dashboard — Uniswap Swaps, x402, Telegram, Daemon](dashboard_screenshot_2.png)
+
 ---
 
 ## Problem
