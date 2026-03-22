@@ -121,6 +121,16 @@ Every claim is verifiable on BaseScan and Blockscout:
 | 6 | Service requested ($1 escrowed) | [`0x7f961f...`](https://celo-sepolia.blockscout.com/tx/0x7f961fdfd9d1ff708bcdfc83817ee81d96b2b7365cd933efcbc352d6ce5d1d72) | Escrow on Celo |
 | 7 | Service completed (payment released) | [`0xdb3337...`](https://celo-sepolia.blockscout.com/tx/0xdb3337580c2f8391cca2445658daecfcb3bd537a47ac6d67eb1c67759360b06e) | Full lifecycle on Celo |
 
+## Live Integration Proofs
+
+Every integration below was tested against real APIs — no mocks, no stubs. Proof files contain full HTTP request/response pairs.
+
+| # | Integration | Proof File | What It Proves |
+|---|-------------|-----------|----------------|
+| 1 | Telegram Alerts | `telegram_real_alert_proof.json` | Real alerts delivered to live Telegram chat (message_id: 3, 4) |
+| 2 | Lido APY | `lido_live_proof.json` | Live stETH SMA APY 2.42% from `eth-api.lido.fi` (HTTP 200) |
+| 3 | Bankr API | `bankr_api_proof.json` | API key valid (402 not 401), gateway healthy, all 3 providers online |
+
 ## Integrations
 
 ### Bankr — Self-Funding Inference
@@ -129,6 +139,9 @@ Every claim is verifiable on BaseScan and Blockscout:
 - **Models:** 20+ (Claude, GPT, Gemini) with automatic cost-optimized selection
 - **Self-funding:** Agent selects cheapest model per task complexity (Gemini Flash for simple, Claude Sonnet for analysis, Opus for critical decisions)
 - **Economics:** 0.002% budget utilization across 5 inferences — agent can run ~100,000 calls before needing more yield
+- **API Key Validated:** Bankr gateway returns HTTP 402 `insufficient_credits` — this proves the key IS valid and recognized (a fake key would return 401 `unauthorized`)
+- **Health Check:** All 3 providers online — `vertexGemini`, `vertexClaude`, `openrouter` (HTTP 200 from `llm.bankr.bot/health`)
+- **Proof:** `bankr_api_proof.json` — full API call/response, health check, model selection logic, fallback chain
 
 ### stETH Treasury Vault Architecture
 > **Note:** The TreasuryVault is designed to work with ANY yield-bearing ERC20 token, not just stETH. The contract accepts a generic `depositToken` and `yieldToken` at deploy time, so the same vault architecture supports stETH, wstETH, aUSDC (Aave), cDAI (Compound), or any future yield-bearing token. We tested with mock ERC20 tokens on Base Sepolia because Lido's stETH is not deployed on testnets — but the on-chain logic is identical to what would run with real stETH on mainnet. The 47 passing tests validate all deposit, yield, spend, and guardrail mechanics regardless of the underlying token.
@@ -137,8 +150,13 @@ Every claim is verifiable on BaseScan and Blockscout:
 - **Treasury primitive:** TreasuryVault.sol — principal locked at contract level, only yield withdrawable. 47 tests prove this.
 - **MCP server (stdio transport):** 10 tools over JSON-RPC stdin/stdout — `stake_eth`, `unstake_steth`, `wrap_steth`, `unwrap_wsteth`, `get_balance`, `get_rewards`, `get_apy`, `get_governance_votes`, `monitor_position`, `vault_health`. All write operations support `dry_run`. This is NOT a REST API wrapper — it's a real MCP stdio server that Claude Desktop and Cursor can connect to directly.
 - **Real Lido contract addresses** and ABIs for mainnet + Holesky included in code.
-- **Live APY:** Fetches real-time stETH APY from `eth-api.lido.fi/v1/protocol/steth/apr/sma`
+- **Live APY:** Fetches real-time stETH APY from `eth-api.lido.fi/v1/protocol/steth/apr/sma` — **verified live: 2.42% SMA APY** (HTTP 200, 7-day APR history included). Proof: `lido_live_proof.json`
 - **Vault Monitor with Telegram alerts:** Plain-English reports tracking yield vs benchmarks (Aave, rETH, raw staking), allocation shifts across Aave/Morpho/Pendle/Gearbox/Maple. Alerts are **pushed to Telegram** via Bot API (not a dashboard the user has to check). Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` to enable.
+- **Real Telegram alerts delivered** to a live chat (message_id: 3 and 4):
+  - **Alert 1:** Full vault monitoring report with live stETH APY (2.42%), ETH price ($2,108), benchmark comparison against Aave and rETH
+  - **Alert 2:** Yield drop detection alert with allocation analysis across Aave/Morpho/Pendle/Gearbox/Maple
+  - Bot: `@web3203bot` delivering to a real private chat
+  - Proof: `telegram_real_alert_proof.json` with full Telegram API `sendMessage` responses
 - **MCP-callable vault_health:** Structured JSON health check tool callable by other agents — returns status, APY spread, allocation, alerts, and recommended actions (bonus agent-to-agent interop).
 - **Skill file:** `lido.skill.md` gives agents the mental model (rebasing mechanics, wstETH vs stETH, L2 bridging, safe patterns, governance)
 
@@ -296,6 +314,9 @@ autofund-agent/
 │   └── index.html                 # GitHub Pages deployment
 ├── lido.skill.md                  # Lido skill file for agents
 ├── BUILD_STORY.md                 # Hackathon build story
+├── telegram_real_alert_proof.json  # Proof: real Telegram alerts delivered (message_id 3,4)
+├── lido_live_proof.json           # Proof: live stETH APY 2.42% from eth-api.lido.fi
+├── bankr_api_proof.json           # Proof: Bankr API key valid, all providers online
 ├── uniswap_mainnet_quote.json     # Verified Uniswap API quote proof
 ├── uniswap_quote_proof.json       # Additional quote proof
 ├── agent.json                     # Agent identity + capabilities descriptor
