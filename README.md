@@ -157,6 +157,11 @@ Every integration below was tested against real APIs — no mocks, no stubs. Pro
   - **Alert 2:** Yield drop detection alert with allocation analysis across Aave/Morpho/Pendle/Gearbox/Maple
   - Bot: `@web3203bot` delivering to a real private chat
   - Proof: `telegram_real_alert_proof.json` with full Telegram API `sendMessage` responses
+
+**Telegram Alert Screenshot (live proof):**
+
+![AutoFund Vault Monitor - Real Telegram Alerts](telegram_alert_screenshot.png)
+
 - **MCP-callable vault_health:** Structured JSON health check tool callable by other agents — returns status, APY spread, allocation, alerts, and recommended actions (bonus agent-to-agent interop).
 - **Skill file:** `lido.skill.md` gives agents the mental model (rebasing mechanics, wstETH vs stETH, L2 bridging, safe patterns, governance)
 
