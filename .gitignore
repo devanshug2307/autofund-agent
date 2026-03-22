@@ -27,3 +27,4 @@ memory/
 _reference/
 .venv/
 olas-venv/
+.claude/
