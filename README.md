@@ -448,6 +448,7 @@ This is a prototype for the future of autonomous AI operations:
 - **Dashboard:** [devanshug2307.github.io/autofund-agent](https://devanshug2307.github.io/autofund-agent/)
 - **GitHub:** [github.com/devanshug2307/autofund-agent](https://github.com/devanshug2307/autofund-agent)
 - **Moltbook:** [moltbook.com/u/autofundagent](https://www.moltbook.com/u/autofundagent)
+- **Moltbook Post:** [AutoFund on m/synthesis](https://www.moltbook.com/post/0616681b-f5d1-4091-9c18-03f4d504b4ff)
 - **ERC-8004 Identity:** [BaseScan TX](https://basescan.org/tx/0x9890894365098da23a347ba828bab3c6f01b6fd6307e914297be5801e7b36282)
 - **TreasuryVault:** [BaseScan](https://sepolia.basescan.org/address/0xDcb6aEdb34b7c91F3b83a0Bf61c7d84DB2f9F2bF)
 - **ServiceRegistry:** [BaseScan](https://sepolia.basescan.org/address/0xa602931E5976FA282d0887c8Bd1741a6FEfF9Dc1)
