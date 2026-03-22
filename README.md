@@ -88,6 +88,7 @@ Human deposits $1,000 → Principal LOCKED in TreasuryVault
 | ServiceRegistry | Celo Sepolia | [`0x5cFA9374C4DcdFE58A32d2702d73bB643cc85A36`](https://celo-sepolia.blockscout.com/address/0x5cFA9374C4DcdFE58A32d2702d73bB643cc85A36) | Yes |
 | Mock USDC | Celo Sepolia | [`0x0060eD967436DC210aF9F5A2A3A98Ff4D876040b`](https://celo-sepolia.blockscout.com/address/0x0060eD967436DC210aF9F5A2A3A98Ff4D876040b) | Yes |
 | Mock cUSD | Celo Sepolia | [`0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3`](https://celo-sepolia.blockscout.com/address/0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3) | Yes |
+| AutoFund AI Token | Status Network Sepolia | [`0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3`](https://sepoliascan.status.network/address/0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3) | Yes |
 
 ## Onchain Transaction Proof
 
@@ -161,6 +162,13 @@ Every claim is verifiable on BaseScan and Blockscout:
 - **Stablecoin-native:** Celo supports 25+ stablecoins tracking local currencies, perfect for global agent services
 - **Explorer:** [celo-sepolia.blockscout.com](https://celo-sepolia.blockscout.com)
 
+### Status Network — Gasless L2 Deployment
+- **Contract deployed on Status Network Sepolia** — zero gas fee transactions
+- **Contract:** [`0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3`](https://sepoliascan.status.network/address/0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3)
+- **TX:** [`0xb75509c...`](https://sepoliascan.status.network/tx/0xb75509c)
+- **Why Status:** Zero gas fees make it ideal for continuous autonomous agent operations — no gas budgeting required
+- **Explorer:** [sepoliascan.status.network](https://sepoliascan.status.network)
+
 ## Tests
 
 **47/47 passing** — run with:
@@ -214,6 +222,43 @@ SLEEP → Wait for next cycle
 python3 -m src.daemon --cycles 3 --interval 60
 ```
 
+### Self-Check Verification (6 Checks Per Cycle)
+
+After each daemon cycle, the agent runs `self_check.py` to verify its own operations. Six checks are performed every cycle:
+
+1. **Treasury principal intact** — re-reads on-chain status, confirms principal is non-negative
+2. **Yield non-negative** — verifies available yield has not gone negative
+3. **Net position sustainable** — confirms revenue minus costs is tracking correctly
+4. **No critical alerts** — checks that no critical vault alerts were missed
+5. **Inference budget remaining** — verifies Bankr budget has not been exhausted
+6. **Lido APY sanity** — ensures APY data is in a sane range (not stale or anomalous)
+
+Each cycle produces a structured PASS/FAIL verdict with recommendations if any check fails.
+
+### HTTP Service API (Discoverable)
+
+`src/service_api.py` exposes AutoFund as a discoverable HTTP service on Base via FastAPI:
+
+```bash
+uvicorn src.service_api:app --host 0.0.0.0 --port 8000
+```
+
+Endpoints:
+- `GET /` — Service discovery root with full endpoint listing
+- `GET /services` — List all services with pricing
+- `GET /services/catalog` — Full catalog with examples and descriptions
+- `POST /portfolio/analyze` — AI-powered portfolio analysis (paid, $1)
+- `GET /vault/report` — Plain-English vault monitoring report
+- `GET /vault/alerts` — Run monitoring checks, return alerts
+- `GET /lido/apy` — Current Lido stETH APY with benchmarks
+- `POST /lido/stake` — Simulate staking (dry-run default)
+- `GET /lido/balance` — Query stETH/wstETH balances
+- `GET /lido/governance` — Active Lido DAO proposals
+- `GET /market/price` — Real-time ETH/USD price
+- `GET /market/quote` — Swap quote for any token pair
+- `GET /agent/status` — Self-sustainability metrics
+- `GET /health` — Health check
+
 ## Project Structure
 
 ```
@@ -230,6 +275,8 @@ autofund-agent/
 │   ├── uniswap_trader.py          # Trading via Uniswap API (verified)
 │   ├── bankr_integration.py       # Self-funding via Bankr Gateway
 │   ├── daemon.py                  # Autonomous daemon mode
+│   ├── self_check.py              # Post-cycle self-verification (6 checks)
+│   ├── service_api.py             # Discoverable HTTP service API (FastAPI)
 │   └── demo_full_loop.py          # 6-phase profitability demo
 ├── scripts/
 │   ├── deploy.cjs                 # Local deployment + demo
@@ -251,7 +298,10 @@ autofund-agent/
 ├── BUILD_STORY.md                 # Hackathon build story
 ├── uniswap_mainnet_quote.json     # Verified Uniswap API quote proof
 ├── uniswap_quote_proof.json       # Additional quote proof
+├── agent.json                     # Agent identity + capabilities descriptor
+├── agent_log.json                 # Full agent activity log (all cycles)
 ├── demo_output.json               # Full demo activity log
+├── deployment-celo.json           # Celo Sepolia deployment addresses + TX hashes
 ├── mcp_smoke_test_output.txt      # Proof: MCP stdio server smoke test output
 ├── hardhat.config.cjs
 ├── requirements.txt
