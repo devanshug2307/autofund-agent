@@ -1,0 +1,101 @@
+============================================================
+  AUTOFUND TELEGRAM ALERT PROOF
+  Generated: 2026-03-22T06:59:35.631273Z
+============================================================
+
+LIDO LIVE DATA:
+  APY: 2.4234%
+  Source: sma_apr
+  Endpoints called: https://eth-api.lido.fi/v1/protocol/steth/apr/sma, https://eth-api.lido.fi/v1/protocol/steth/apr/last
+
+ALERT MESSAGE (exact Telegram content):
+----------------------------------------
+📊 *AutoFund Vault Monitor - Live Report*
+
+*Current Lido stETH APY:* 2.4234%
+*Data Source:* eth-api.lido.fi (live)
+*Position:* 50 ETH
+*Estimated Daily Yield:* 0.0033 ETH (~$11.62)
+
+*Allocation Breakdown:*
+  Aave: 35% | Morpho: 25%
+  Pendle: 20% | Gearbox: 12% | Maple: 8%
+
+*Status:* All systems healthy
+_Generated: 2026-03-22 06:59 UTC_
+_AutoFund Autonomous DeFi Agent_
+----------------------------------------
+
+TELEGRAM DELIVERY:
+  Status: Not sent (Credentials not configured in environment)
+
+Full details:
+{
+  "sent": false,
+  "reason": "Credentials not configured in environment",
+  "telegram_bot_token_set": false,
+  "telegram_chat_id_set": false
+}
+
+RAW API RESPONSES:
+{
+  "sma_apr": {
+    "url": "https://eth-api.lido.fi/v1/protocol/steth/apr/sma",
+    "status_code": 200,
+    "body": {
+      "data": {
+        "aprs": [
+          {
+            "timeUnix": 1773577199,
+            "apr": 2.372
+          },
+          {
+            "timeUnix": 1773663623,
+            "apr": 2.512
+          },
+          {
+            "timeUnix": 1773750131,
+            "apr": 2.408
+          },
+          {
+            "timeUnix": 1773836531,
+            "apr": 2.387
+          },
+          {
+            "timeUnix": 1773922931,
+            "apr": 2.456
+          },
+          {
+            "timeUnix": 1774009319,
+            "apr": 2.447
+          },
+          {
+            "timeUnix": 1774095719,
+            "apr": 2.382
+          }
+        ],
+        "smaApr": 2.423428571428572
+      },
+      "meta": {
+        "symbol": "stETH",
+        "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+        "chainId": 1
+      }
+    }
+  },
+  "last_apr": {
+    "url": "https://eth-api.lido.fi/v1/protocol/steth/apr/last",
+    "status_code": 200,
+    "body": {
+      "data": {
+        "timeUnix": 1774095719,
+        "apr": 2.382
+      },
+      "meta": {
+        "symbol": "stETH",
+        "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+        "chainId": 1
+      }
+    }
+  }
+}

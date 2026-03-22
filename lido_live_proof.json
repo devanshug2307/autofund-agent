@@ -1,0 +1,70 @@
+{
+  "fetch_timestamp": "2026-03-22T06:59:33.638878Z",
+  "endpoints_tried": [
+    "https://eth-api.lido.fi/v1/protocol/steth/apr/sma",
+    "https://eth-api.lido.fi/v1/protocol/steth/apr/last"
+  ],
+  "apy": 2.4234,
+  "raw_responses": {
+    "sma_apr": {
+      "url": "https://eth-api.lido.fi/v1/protocol/steth/apr/sma",
+      "status_code": 200,
+      "body": {
+        "data": {
+          "aprs": [
+            {
+              "timeUnix": 1773577199,
+              "apr": 2.372
+            },
+            {
+              "timeUnix": 1773663623,
+              "apr": 2.512
+            },
+            {
+              "timeUnix": 1773750131,
+              "apr": 2.408
+            },
+            {
+              "timeUnix": 1773836531,
+              "apr": 2.387
+            },
+            {
+              "timeUnix": 1773922931,
+              "apr": 2.456
+            },
+            {
+              "timeUnix": 1774009319,
+              "apr": 2.447
+            },
+            {
+              "timeUnix": 1774095719,
+              "apr": 2.382
+            }
+          ],
+          "smaApr": 2.423428571428572
+        },
+        "meta": {
+          "symbol": "stETH",
+          "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+          "chainId": 1
+        }
+      }
+    },
+    "last_apr": {
+      "url": "https://eth-api.lido.fi/v1/protocol/steth/apr/last",
+      "status_code": 200,
+      "body": {
+        "data": {
+          "timeUnix": 1774095719,
+          "apr": 2.382
+        },
+        "meta": {
+          "symbol": "stETH",
+          "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+          "chainId": 1
+        }
+      }
+    }
+  },
+  "apy_source": "sma_apr"
+}
