@@ -26,4 +26,4 @@ demo_output.json
 memory/
 _reference/
 .venv/
-.venv/
+olas-venv/
