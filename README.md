@@ -19,7 +19,7 @@ AutoFund is an autonomous agent that:
 2. **Locks** the principal — the agent can never withdraw it (enforced at smart contract level)
 3. **Harvests** only the yield (interest earned)
 4. **Pays** for its own LLM inference using Bankr API
-5. **Trades** autonomously via Uniswap for profit
+5. **Trades** autonomously via Uniswap V3 (real onchain swaps, not just quotes)
 6. **Provides** paid services (portfolio analysis) to earn revenue
 7. **Reinvests** earnings to grow its operational budget
 8. **Runs autonomously** as a daemon with WAKE→SENSE→THINK→ACT→CHECK→LOG→SLEEP lifecycle
@@ -39,9 +39,9 @@ The agent is structurally constrained: spending guardrails (per-tx limits, daily
 │  │ Manager   │ │ Engine   │ │ Provider       │   │
 │  │           │ │          │ │                │   │
 │  │ • Deposit │ │ • Uniswap│ │ • Portfolio    │   │
-│  │ • Lock    │ │   quotes │ │   analysis     │   │
-│  │ • Harvest │ │ • Market │ │ • Vault        │   │
-│  │   yield   │ │   analysis│ │   monitoring   │   │
+│  │ • Lock    │ │   V3 swap│ │   analysis     │   │
+│  │ • Harvest │ │ • Real   │ │ • Vault        │   │
+│  │   yield   │ │   onchain│ │   monitoring   │   │
 │  │ • Pay for │ │ • P&L    │ │ • Plain English│   │
 │  │   compute │ │   tracking│ │   reports      │   │
 │  └─────┬─────┘ └────┬─────┘ └───────┬────────┘   │
@@ -107,6 +107,15 @@ Every claim is verifiable on BaseScan and Blockscout:
 | 9 | Request service ($2 escrowed) | [`0x298b2a...`](https://sepolia.basescan.org/tx/0x298b2a9bc360e4b453cb5f50202fa39159d1b57cc30e0f465c508e7ab062b97a) | Payment escrowed |
 | 10 | Complete service (payment released) | [`0x5bdae3...`](https://sepolia.basescan.org/tx/0x5bdae3335f3ec7a8cb6388b1ac56f3434c7e14c46b9ec7873f87fc657479b0b2) | Full lifecycle proven |
 
+### Ethereum Sepolia — Real Uniswap V3 Swaps
+
+| # | Action | TX Hash | What It Proves |
+|---|--------|---------|----------------|
+| 1 | Swap 0.0005 ETH → 2.773624 USDC | [`0x42308f...`](https://sepolia.etherscan.io/tx/0x42308f246ad675aacbf2ea42b6bf2f29c6972e3242f5e398c6b7c61efd661bb7) | Real Uniswap V3 swap executed onchain |
+| 2 | Swap 0.0003 ETH → 1.664174 USDC | [`0xa2e288...`](https://sepolia.etherscan.io/tx/0xa2e2888018276922c7c38e865ee3baf08d1b6aabd0f0913b16a421318587e203) | Integrated swap via AutoFund trading engine |
+
+> Both swaps use Uniswap V3 SwapRouter02 (`0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E`) with `exactInputSingle` via `multicall`. Verify both TX hashes on [sepolia.etherscan.io](https://sepolia.etherscan.io).
+
 **ERC-8004 Identity:** [`0x989089...`](https://basescan.org/tx/0x9890894365098da23a347ba828bab3c6f01b6fd6307e914297be5801e7b36282) (Base Mainnet)
 
 ### Celo Sepolia Onchain Proof
@@ -130,6 +139,7 @@ Every integration below was tested against real APIs — no mocks, no stubs. Pro
 | 1 | Telegram Alerts | `telegram_real_alert_proof.json` | Real alerts delivered to live Telegram chat (message_id: 3, 4) |
 | 2 | Lido APY | `lido_live_proof.json` | Live stETH SMA APY 2.42% from `eth-api.lido.fi` (HTTP 200) |
 | 3 | Bankr API | `bankr_api_proof.json` | API key valid (402 not 401), gateway healthy, all 3 providers online |
+| 4 | **Uniswap V3 Swaps** | `swap_proof.json` | **2 real swaps executed onchain** — 0.0008 ETH → 4.44 USDC via SwapRouter02 on Sepolia |
 
 ## Integrations
 
@@ -177,10 +187,25 @@ Every integration below was tested against real APIs — no mocks, no stubs. Pro
 - **MCP-callable vault_health:** Structured JSON health check tool callable by other agents — returns status, APY spread, allocation, alerts, and recommended actions (bonus agent-to-agent interop).
 - **Skill file:** `lido.skill.md` gives agents the mental model (rebasing mechanics, wstETH vs stETH, L2 bridging, safe patterns, governance)
 
-### Uniswap — Trading API Integration
-- **API Key:** Real key from Developer Platform (verified)
-- **Verified quote:** `requestId: alXqLiMgCYcEPeA=`, `quoteId: 92860373-3404-4ea7-99a0-23b307a56cc6` (see `uniswap_mainnet_quote.json`)
-- **Quote proof:** Real 1 ETH → USDC quote on Base mainnet saved in repo
+### Uniswap — Real Onchain Swaps (Verified)
+
+> **REAL EXECUTED SWAPS** — not quotes, not simulations. Both transactions are verifiable on Ethereum Sepolia Etherscan.
+
+- **Router:** Uniswap V3 SwapRouter02 [`0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E`](https://sepolia.etherscan.io/address/0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E) on Ethereum Sepolia
+- **Method:** `exactInputSingle` via `multicall` — the standard Uniswap V3 swap path
+- **Network:** Ethereum Sepolia (chainId 11155111)
+
+| # | Swap | TX Hash | Etherscan |
+|---|------|---------|-----------|
+| 1 | 0.0005 ETH → 2.773624 USDC | `0x42308f...` | [**Verify on Etherscan**](https://sepolia.etherscan.io/tx/0x42308f246ad675aacbf2ea42b6bf2f29c6972e3242f5e398c6b7c61efd661bb7) |
+| 2 | 0.0003 ETH → 1.664174 USDC | `0xa2e288...` | [**Verify on Etherscan**](https://sepolia.etherscan.io/tx/0xa2e2888018276922c7c38e865ee3baf08d1b6aabd0f0913b16a421318587e203) |
+
+- **Swap 1:** Standalone swap script proving direct Uniswap V3 interaction
+- **Swap 2:** Integrated swap executed through AutoFund's `uniswap_trader.py` trading engine (block 10496806, gas used: 117,588)
+- **Total swapped:** 0.0008 ETH → 4.437798 USDC (effective rate: ~$5,547/ETH)
+- **Proof file:** `swap_proof.json` — full TX hashes, block numbers, gas usage, amounts
+- **API Key:** Real key from Uniswap Developer Platform (verified)
+- **Additional quote proof:** `uniswap_mainnet_quote.json` — real 1 ETH → USDC quote on Base mainnet
 - **CoinGecko fallback:** Real-time price feed for market analysis
 - **P&L tracking:** Portfolio value, trade history, performance reports
 
@@ -345,7 +370,7 @@ autofund-agent/
 │   ├── mcp_server.py              # Lido MCP server core (10 tools + dry_run)
 │   ├── mcp_stdio_server.py        # MCP stdio transport (JSON-RPC over stdin/stdout)
 │   ├── monitor.py                 # Vault monitor + Telegram alerts + vault_health
-│   ├── uniswap_trader.py          # Trading via Uniswap API (verified)
+│   ├── uniswap_trader.py          # Trading engine: real Uniswap V3 swaps + quotes
 │   ├── bankr_integration.py       # Self-funding via Bankr Gateway
 │   ├── daemon.py                  # Autonomous daemon mode
 │   ├── self_check.py              # Post-cycle self-verification (6 checks)
@@ -358,7 +383,9 @@ autofund-agent/
 │   ├── deploy-vault.cjs           # Vault-only deployment
 │   ├── deploy-status.cjs          # Status L2 deployment
 │   ├── onchain-demo.cjs           # Treasury onchain demo
-│   └── onchain-demo2.cjs          # Service lifecycle demo
+│   ├── onchain-demo2.cjs          # Service lifecycle demo
+│   ├── real_swap_sepolia.py       # Standalone Uniswap V3 swap on Sepolia
+│   └── real_swap_round_trip.py    # Integrated swap via trading engine
 ├── test/
 │   ├── TreasuryVault.test.cjs     # 17 core tests
 │   ├── TreasuryVault.advanced.test.cjs  # 22 advanced tests
@@ -372,6 +399,7 @@ autofund-agent/
 ├── telegram_real_alert_proof.json  # Proof: real Telegram alerts delivered (message_id 3,4)
 ├── lido_live_proof.json           # Proof: live stETH APY 2.42% from eth-api.lido.fi
 ├── bankr_api_proof.json           # Proof: Bankr API key valid, all providers online
+├── swap_proof.json                # Proof: 2 real Uniswap V3 swaps on Sepolia (TX hashes, amounts, gas)
 ├── uniswap_mainnet_quote.json     # Verified Uniswap API quote proof
 ├── uniswap_quote_proof.json       # Additional quote proof
 ├── agent.json                     # Agent identity + capabilities descriptor

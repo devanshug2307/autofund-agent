@@ -3,17 +3,25 @@ AutoFund Uniswap Trading Module
 ================================
 Integrates with the Uniswap Trading API for autonomous token swaps.
 Supports quoting, execution, and P&L tracking.
+Executes REAL on-chain swaps via Uniswap V3 SwapRouter02.
 
 Built for The Synthesis Hackathon - Uniswap Agentic Finance Bounty ($5,000)
 """
 
 import json
 import os
+import time
 from datetime import datetime
 from dataclasses import dataclass, field
 from typing import Optional
 
 import httpx
+
+try:
+    from web3 import Web3
+    WEB3_AVAILABLE = True
+except ImportError:
+    WEB3_AVAILABLE = False
 
 
 # Common token addresses on Base
@@ -30,6 +38,62 @@ BASE_SEPOLIA_TOKENS = {
     "WETH": "0x4200000000000000000000000000000000000006",
     "USDC": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
 }
+
+# Ethereum Sepolia tokens (Uniswap V3 pools with real liquidity)
+ETH_SEPOLIA_TOKENS = {
+    "ETH": "0x0000000000000000000000000000000000000000",
+    "WETH": "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
+    "USDC": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+}
+
+# Uniswap V3 Router addresses per chain
+UNISWAP_ROUTERS = {
+    11155111: "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E",  # Ethereum Sepolia
+    84532: "0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4",     # Base Sepolia
+    8453: "0x2626664c2603336E57B271c5C0b26F421741e481",      # Base Mainnet
+}
+
+# RPC endpoints per chain
+CHAIN_RPCS = {
+    11155111: "https://ethereum-sepolia-rpc.publicnode.com",
+    84532: "https://sepolia.base.org",
+    8453: "https://mainnet.base.org",
+}
+
+# SwapRouter02 ABI for exactInputSingle
+SWAP_ROUTER_ABI = json.loads("""[
+    {
+        "inputs": [
+            {
+                "components": [
+                    {"name": "tokenIn", "type": "address"},
+                    {"name": "tokenOut", "type": "address"},
+                    {"name": "fee", "type": "uint24"},
+                    {"name": "recipient", "type": "address"},
+                    {"name": "amountIn", "type": "uint256"},
+                    {"name": "amountOutMinimum", "type": "uint256"},
+                    {"name": "sqrtPriceLimitX96", "type": "uint160"}
+                ],
+                "name": "params",
+                "type": "tuple"
+            }
+        ],
+        "name": "exactInputSingle",
+        "outputs": [{"name": "amountOut", "type": "uint256"}],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {"name": "deadline", "type": "uint256"},
+            {"name": "data", "type": "bytes[]"}
+        ],
+        "name": "multicall",
+        "outputs": [{"name": "", "type": "bytes[]"}],
+        "stateMutability": "payable",
+        "type": "function"
+    }
+]""")
 
 
 @dataclass
@@ -133,6 +197,166 @@ class UniswapTrader:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
+    def execute_real_swap(self, token_in_symbol: str = "ETH",
+                          token_out_symbol: str = "USDC",
+                          amount: float = 0.0005,
+                          private_key: str = "",
+                          pool_fee: int = 10000) -> dict:
+        """
+        Execute a REAL on-chain swap via Uniswap V3 SwapRouter02.
+
+        Args:
+            token_in_symbol: Input token symbol (ETH, WETH, USDC)
+            token_out_symbol: Output token symbol (ETH, WETH, USDC)
+            amount: Amount of input token (in human-readable units)
+            private_key: Private key for signing (or from env PRIVATE_KEY)
+            pool_fee: Pool fee tier (500=0.05%, 3000=0.3%, 10000=1%)
+
+        Returns:
+            dict with tx_hash, status, amounts, explorer URL
+        """
+        if not WEB3_AVAILABLE:
+            return {"status": "error", "error": "web3 not installed. Run: pip install web3"}
+
+        pk = private_key or os.getenv("PRIVATE_KEY", "")
+        if not pk:
+            return {"status": "error", "error": "No private key provided"}
+
+        # Select token addresses for the chain
+        if self.chain_id == 11155111:
+            tokens = ETH_SEPOLIA_TOKENS
+        elif self.chain_id == 84532:
+            tokens = BASE_SEPOLIA_TOKENS
+        else:
+            tokens = BASE_TOKENS
+
+        rpc_url = CHAIN_RPCS.get(self.chain_id, "https://ethereum-sepolia-rpc.publicnode.com")
+        router_addr = UNISWAP_ROUTERS.get(self.chain_id)
+        if not router_addr:
+            return {"status": "error", "error": f"No router for chain {self.chain_id}"}
+
+        w3 = Web3(Web3.HTTPProvider(rpc_url))
+        if not w3.is_connected():
+            return {"status": "error", "error": f"Cannot connect to RPC: {rpc_url}"}
+
+        account = w3.eth.account.from_key(pk)
+        wallet = account.address
+
+        # Determine token addresses and decimals
+        token_in_addr = tokens.get(token_in_symbol if token_in_symbol != "ETH" else "WETH")
+        token_out_addr = tokens.get(token_out_symbol if token_out_symbol != "ETH" else "WETH")
+        token_in_decimals = 6 if token_in_symbol == "USDC" else 18
+        amount_wei = int(amount * (10 ** token_in_decimals))
+
+        # For ETH input, we send value with the tx and the router wraps it
+        is_eth_input = token_in_symbol == "ETH"
+        tx_value = amount_wei if is_eth_input else 0
+
+        # Build the router contract
+        router = w3.eth.contract(
+            address=Web3.to_checksum_address(router_addr),
+            abi=SWAP_ROUTER_ABI
+        )
+
+        # Build swap params
+        swap_params = (
+            Web3.to_checksum_address(token_in_addr),
+            Web3.to_checksum_address(token_out_addr),
+            pool_fee,
+            Web3.to_checksum_address(wallet),
+            amount_wei,
+            0,  # amountOutMinimum = 0 (testnet, accept any)
+            0   # sqrtPriceLimitX96 = 0 (no limit)
+        )
+
+        # Encode via multicall with deadline
+        deadline = int(time.time()) + 1200
+        swap_calldata = router.encode_abi("exactInputSingle", [swap_params])
+        multicall_data = router.encode_abi("multicall", [deadline, [swap_calldata]])
+
+        # Build transaction
+        nonce = w3.eth.get_transaction_count(wallet)
+        gas_price = w3.eth.gas_price
+
+        tx = {
+            'to': Web3.to_checksum_address(router_addr),
+            'value': tx_value,
+            'data': multicall_data,
+            'nonce': nonce,
+            'gas': 350000,
+            'gasPrice': gas_price + w3.to_wei(1, 'gwei'),
+            'chainId': self.chain_id,
+        }
+
+        # Estimate gas
+        try:
+            gas_est = w3.eth.estimate_gas(tx)
+            tx['gas'] = int(gas_est * 1.3)
+        except Exception:
+            pass  # Use default 350000
+
+        # Sign and send
+        signed = w3.eth.account.sign_transaction(tx, pk)
+        tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
+        tx_hash_hex = f"0x{tx_hash.hex()}"
+
+        # Wait for receipt
+        try:
+            receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
+            success = receipt['status'] == 1
+
+            # Decode output amount from transfer logs
+            amount_out = 0
+            if success and len(receipt['logs']) > 0:
+                # First log is typically the output token transfer
+                out_data = receipt['logs'][0]['data'].hex()
+                out_decimals = 6 if token_out_symbol == "USDC" else 18
+                amount_out = int(out_data, 16) / (10 ** out_decimals)
+
+            # Record the trade
+            explorer_base = {
+                11155111: "https://sepolia.etherscan.io",
+                84532: "https://sepolia.basescan.org",
+                8453: "https://basescan.org",
+            }.get(self.chain_id, "https://sepolia.etherscan.io")
+
+            if success:
+                trade = TradeRecord(
+                    timestamp=datetime.utcnow().isoformat(),
+                    pair=f"{token_in_symbol}/{token_out_symbol}",
+                    side="SELL" if token_in_symbol == "ETH" else "BUY",
+                    token_in=token_in_symbol,
+                    token_out=token_out_symbol,
+                    amount_in=amount,
+                    amount_out=round(amount_out, 6),
+                    price=amount_out / amount if amount > 0 else 0,
+                    tx_hash=tx_hash_hex,
+                    status="confirmed_onchain"
+                )
+                self.trades.append(trade)
+
+            return {
+                "status": "success" if success else "reverted",
+                "tx_hash": tx_hash_hex,
+                "block_number": receipt['blockNumber'],
+                "gas_used": receipt['gasUsed'],
+                "token_in": token_in_symbol,
+                "token_out": token_out_symbol,
+                "amount_in": amount,
+                "amount_out": amount_out,
+                "chain_id": self.chain_id,
+                "explorer_url": f"{explorer_base}/tx/{tx_hash_hex}",
+                "router": router_addr,
+            }
+
+        except Exception as e:
+            return {
+                "status": "pending",
+                "tx_hash": tx_hash_hex,
+                "error": str(e),
+                "note": "TX broadcast but receipt not confirmed yet"
+            }
+
     def simulate_swap(self, pair: str, side: str, amount: float) -> TradeRecord:
         """
         Simulate a swap for demo/testing purposes.
@@ -195,7 +419,12 @@ class UniswapTrader:
         """
         # Try Uniswap API first
         if self.api_key:
-            tokens = BASE_TOKENS if self.chain_id == 8453 else BASE_SEPOLIA_TOKENS
+            if self.chain_id == 11155111:
+                tokens = ETH_SEPOLIA_TOKENS
+            elif self.chain_id == 8453:
+                tokens = BASE_TOKENS
+            else:
+                tokens = BASE_SEPOLIA_TOKENS
             token_in = tokens.get(token_in_symbol, tokens.get("WETH"))
             token_out = tokens.get(token_out_symbol, tokens.get("USDC"))
             decimals = 6 if token_out_symbol == "USDC" else 18

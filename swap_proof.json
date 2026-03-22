@@ -1,0 +1,24 @@
+{
+  "swap_1_initial": {
+    "tx_hash": "0x42308f246ad675aacbf2ea42b6bf2f29c6972e3242f5e398c6b7c61efd661bb7",
+    "network": "ethereum_sepolia",
+    "chain_id": 11155111,
+    "swap": "0.0005 ETH -> 2.773624 USDC",
+    "router": "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E",
+    "explorer": "https://sepolia.etherscan.io/tx/0x42308f246ad675aacbf2ea42b6bf2f29c6972e3242f5e398c6b7c61efd661bb7",
+    "status": "SUCCESS"
+  },
+  "swap_2_integrated": {
+    "status": "success",
+    "tx_hash": "0xa2e2888018276922c7c38e865ee3baf08d1b6aabd0f0913b16a421318587e203",
+    "block_number": 10496806,
+    "gas_used": 117588,
+    "token_in": "ETH",
+    "token_out": "USDC",
+    "amount_in": 0.0003,
+    "amount_out": 1.664174,
+    "chain_id": 11155111,
+    "explorer_url": "https://sepolia.etherscan.io/tx/0xa2e2888018276922c7c38e865ee3baf08d1b6aabd0f0913b16a421318587e203",
+    "router": "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E"
+  }
+}
