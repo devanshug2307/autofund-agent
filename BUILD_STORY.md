@@ -35,29 +35,67 @@ Every LLM call is tracked with its cost. Every dollar earned is tracked. The age
 
 ## Hours 6-8: Lido MCP Server
 
-Built a full MCP server with 8 tools: stake, unstake, wrap, unwrap, balance, rewards, APY comparison, and position monitoring. All support dry_run mode.
+Built a full MCP server with 10 tools: stake, unstake, wrap, unwrap, balance, rewards, APY, governance votes, position monitoring, and vault health. All write operations support dry_run mode. Added MCP stdio transport (JSON-RPC over stdin/stdout) so Claude Desktop and Cursor can connect directly.
 
 The companion `lido.skill.md` file gives agents the mental model they need before acting — rebasing mechanics, wstETH vs stETH tradeoffs, safe staking patterns. The bar: point any AI agent at the MCP server and stake ETH from a conversation with no custom code.
 
-## Hours 8-10: Vault Monitor
+## Hours 8-10: Vault Monitor + Telegram Alerts
 
 The monitoring agent watches vault positions and delivers alerts in plain English:
 - Yield drops? Explains why and whether action is needed
 - Allocation shifts? Describes what moved and reassures it's normal
 - Below your floor? Critical alert with alternatives
 
-Formatted for Telegram delivery. Designed for humans who don't speak DeFi.
+Alerts are pushed to a real Telegram chat via Bot API (`@web3203bot`). Two live alerts were delivered: a full vault monitoring report with live stETH APY (2.42%), ETH price, and benchmark comparisons, plus a yield drop detection alert with allocation analysis. Proof: `telegram_real_alert_proof.json` with Telegram API responses (message_id 3 and 4).
+
+## Hours 10-14: Real Uniswap V3 Swaps + x402 Payments
+
+Moved from simulated quotes to **real onchain swaps** on Ethereum Sepolia via Uniswap V3 SwapRouter02. Two successful swaps executed:
+- 0.0005 ETH -> 2.773624 USDC (standalone swap script)
+- 0.0003 ETH -> 1.664174 USDC (integrated via `uniswap_trader.py` trading engine)
+
+Both use `exactInputSingle` via `multicall` — the standard Uniswap V3 swap path. TX hashes verifiable on Sepolia Etherscan.
+
+Also integrated **x402** — the HTTP 402 Payment Required standard for machine-to-machine payments. Two premium endpoints now require payment:
+- `POST /portfolio/analyze` ($0.01) — AI-powered wallet analysis
+- `GET /vault/report` ($0.005) — vault monitoring report
+
+Payment verification and settlement happens through the x402 facilitator at `x402.org`. This turns AutoFund into a real paid service that other agents can discover and pay for autonomously — no accounts, no API keys, just onchain payments.
+
+## Hours 14-16: Multi-Chain Deployments
+
+Deployed to **Celo Sepolia** — 4 contracts, 7 onchain transactions proving the full lifecycle on a second chain. Celo's fee abstraction lets agents pay gas in stablecoins, which is ideal for autonomous treasury management.
+
+Deployed to **Status Network Sepolia** — zero gas fee transactions for continuous autonomous operation without gas budgeting.
+
+## Hours 16-18: Autonomous Daemon + Self-Check
+
+Built the autonomous daemon mode (`src/daemon.py`) with a structured lifecycle: WAKE -> SENSE -> THINK -> ACT -> CHECK -> LOG -> SLEEP. Configurable via `--cycles` and `--interval` flags.
+
+Added `self_check.py` — 6 verification checks per cycle:
+1. Treasury principal intact
+2. Yield non-negative
+3. Net position sustainable
+4. No critical alerts missed
+5. Inference budget remaining
+6. Lido APY sanity check
+
+Each cycle produces a structured PASS/FAIL verdict with recommendations if any check fails.
+
+## Hours 18-20: HTTP Service API + Discovery
+
+Built `service_api.py` — a full FastAPI service exposing AutoFund as a discoverable HTTP service with 15+ endpoints: portfolio analysis, vault monitoring, Lido operations, market data, and agent status. Combined with x402 payment gating for premium endpoints.
 
 ## The Closed Loop (Proven)
 
 ```
-Deposit $1,000 → Lock principal → Earn 3.5% APY from Lido
-  → Harvest $50 yield → Pay $0.003 for 5 LLM inferences
-    → Provide 3 portfolio analyses at $1 each → Earn $3.00
-      → Net profit: $2.997 → Reinvest → Cycle continues
+Deposit $1,000 -> Lock principal -> Earn 3.5% APY from Lido
+  -> Harvest $50 yield -> Pay $0.003 for 5 LLM inferences
+    -> Provide 3 portfolio analyses at $1 each -> Earn $3.00
+      -> Net profit: $2.997 -> Reinvest -> Cycle continues
 ```
 
-17 tests. All passing. The loop works.
+47 tests. All passing. The loop works.
 
 ## What We Learned
 
@@ -65,6 +103,10 @@ Deposit $1,000 → Lock principal → Earn 3.5% APY from Lido
 2. **Self-sustaining economics are achievable.** Even at low volumes, yield + services > inference costs.
 3. **MCP servers make DeFi accessible.** An agent shouldn't need to understand Solidity to stake ETH.
 4. **Plain English matters.** The vault monitor report is more useful than any dashboard.
+5. **Real swaps change everything.** Moving from simulated quotes to actual onchain swaps forced us to handle gas estimation, slippage, and real transaction failures.
+6. **x402 makes agent commerce practical.** Any agent can pay for AutoFund's services programmatically — no accounts needed.
+7. **Multi-chain proves generality.** Deploying the same contracts on Base, Celo, and Status Network proved the architecture is chain-agnostic.
+8. **Telegram alerts beat dashboards.** Push notifications to where the user already is, not another tab they have to remember to check.
 
 ## What's Next
 

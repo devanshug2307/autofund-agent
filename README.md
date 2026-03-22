@@ -237,8 +237,8 @@ npx hardhat --config hardhat.config.cjs test
 ```
 
 Test coverage:
-- **TreasuryVault (31 tests):** Deposits, yield tracking, principal protection (4 tests proving agent can NEVER withdraw principal), access control, spending guardrails (exact-limit edge cases), events, comprehensive status
-- **ServiceRegistry (16 tests):** Registration, deactivation, full lifecycle with escrow, multi-user scenarios, double-completion prevention
+- **TreasuryVault (36 tests):** Deposits, yield tracking, principal protection (4 tests proving agent can NEVER withdraw principal), access control, spending guardrails (exact-limit edge cases), events, comprehensive status
+- **ServiceRegistry (11 tests):** Registration, deactivation, full lifecycle with escrow, multi-user scenarios, double-completion prevention
 
 ## How to Run
 
@@ -404,9 +404,17 @@ autofund-agent/
 ├── uniswap_quote_proof.json       # Additional quote proof
 ├── agent.json                     # Agent identity + capabilities descriptor
 ├── agent_log.json                 # Full agent activity log (all cycles)
+├── telegram_alert_proof.json       # Proof: initial Telegram alert test
+├── telegram_alert_proof.txt        # Proof: Telegram alert text output
+├── telegram_alert_screenshot.png   # Screenshot: real Telegram alerts
 ├── demo_output.json               # Full demo activity log
+├── demo_proof.txt                 # Proof: full demo run output
 ├── deployment-celo.json           # Celo Sepolia deployment addresses + TX hashes
+├── mcp_proof.txt                  # Proof: MCP server test output
 ├── mcp_smoke_test_output.txt      # Proof: MCP stdio server smoke test output
+├── monitor_proof.txt              # Proof: vault monitor output
+├── octant_proof.txt               # Proof: Octant public goods evaluator output
+├── alert_history.json             # Alert history log
 ├── hardhat.config.cjs
 ├── requirements.txt
 ├── .env.example
@@ -446,6 +454,7 @@ This is a prototype for the future of autonomous AI operations:
 
 ## Built By
 
+- **Agent:** AutoFund (Claude Opus 4.6)
 - **Human:** Devanshu Goyal ([@devanshugoyal23](https://x.com/devanshugoyal23))
 - **Hackathon:** [The Synthesis](https://synthesis.md) — March 2026
 
