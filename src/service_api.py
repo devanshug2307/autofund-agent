@@ -1,8 +1,13 @@
 """
-AutoFund Service API — Discoverable HTTP Service
-==================================================
+AutoFund Service API — Discoverable HTTP Service with x402 Payments
+====================================================================
 A FastAPI application that exposes the AutoFund agent's portfolio analysis,
 vault monitoring, and Lido tools as a discoverable HTTP service on Base.
+
+Premium endpoints are gated by the x402 payment protocol — clients must
+include a valid payment header (HTTP 402 flow) to access paid services.
+The x402 facilitator at https://x402.org/facilitator handles payment
+verification and settlement on Base Sepolia (eip155:84532).
 
 Any client (human, agent, or contract) can discover and call these endpoints
 to receive paid financial analysis powered by self-funded LLM inference.
@@ -29,6 +34,25 @@ from src.monitor import VaultMonitor
 from src.uniswap_trader import UniswapTrader
 
 # ---------------------------------------------------------------------------
+# x402 Payment Protocol — graceful fallback if not installed
+# ---------------------------------------------------------------------------
+X402_ENABLED = False
+X402_PAY_TO = "0x54eeFbb7b3F701eEFb7fa99473A60A6bf5fE16D7"
+X402_NETWORK = "eip155:84532"  # Base Sepolia
+X402_FACILITATOR_URL = "https://x402.org/facilitator"
+
+try:
+    from x402 import x402ResourceServer
+    from x402.http.facilitator_client import HTTPFacilitatorClient, FacilitatorConfig
+    from x402.http.middleware.fastapi import payment_middleware
+    from x402.http.types import PaymentOption, RouteConfig
+    from x402.mechanisms.evm.exact.register import register_exact_evm_server
+
+    X402_ENABLED = True
+except ImportError:
+    pass  # x402 not installed — service runs without payment gating
+
+# ---------------------------------------------------------------------------
 # FastAPI App
 # ---------------------------------------------------------------------------
 app = FastAPI(
@@ -36,12 +60,55 @@ app = FastAPI(
     description=(
         "Discoverable HTTP API for the AutoFund self-sustaining DeFi agent. "
         "Provides portfolio analysis, Lido vault monitoring, market data, "
-        "and trading insights — all powered by yield-funded LLM inference."
+        "and trading insights — all powered by yield-funded LLM inference. "
+        "Premium endpoints are gated by x402 payment protocol on Base Sepolia."
     ),
-    version="1.0.0",
+    version="1.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+# ---------------------------------------------------------------------------
+# x402 Payment Middleware — real 402 Payment Required for premium endpoints
+# ---------------------------------------------------------------------------
+if X402_ENABLED:
+    # 1. Create facilitator client pointing at x402.org
+    facilitator = HTTPFacilitatorClient(
+        config=FacilitatorConfig(url=X402_FACILITATOR_URL)
+    )
+
+    # 2. Create resource server and register the EVM exact scheme
+    resource_server = x402ResourceServer(facilitator)
+    register_exact_evm_server(resource_server, networks=X402_NETWORK)
+
+    # 3. Define paid routes with pricing
+    x402_routes = {
+        "POST /portfolio/analyze": RouteConfig(
+            accepts=PaymentOption(
+                scheme="exact",
+                pay_to=X402_PAY_TO,
+                price="$0.01",
+                network=X402_NETWORK,
+            ),
+            description="AI-powered portfolio analysis",
+        ),
+        "GET /vault/report": RouteConfig(
+            accepts=PaymentOption(
+                scheme="exact",
+                pay_to=X402_PAY_TO,
+                price="$0.005",
+                network=X402_NETWORK,
+            ),
+            description="Vault monitoring report",
+        ),
+    }
+
+    # 4. Attach the middleware — unpaid requests to these routes get HTTP 402
+    @app.middleware("http")
+    async def x402_payment_middleware(request, call_next):
+        mw = payment_middleware(x402_routes, resource_server)
+        return await mw(request, call_next)
+
 
 # ---------------------------------------------------------------------------
 # Singleton service instances (lazy-init on first request)
@@ -116,12 +183,28 @@ async def root():
     """Service discovery root. Returns metadata about the agent and its capabilities."""
     return {
         "service": "AutoFund Agent",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "chain": "Base Sepolia (84532)",
         "description": (
             "Self-sustaining DeFi agent offering portfolio analysis, "
-            "Lido vault monitoring, and market intelligence as paid HTTP services."
+            "Lido vault monitoring, and market intelligence as paid HTTP services. "
+            "Premium endpoints are gated by x402 payment protocol."
         ),
+        "x402": {
+            "enabled": X402_ENABLED,
+            "facilitator": X402_FACILITATOR_URL,
+            "network": X402_NETWORK,
+            "pay_to": X402_PAY_TO,
+            "paid_endpoints": {
+                "POST /portfolio/analyze": "$0.01",
+                "GET /vault/report": "$0.005",
+            },
+            "info": (
+                "Send requests to paid endpoints without a payment header to "
+                "receive a 402 response with payment requirements. Include a "
+                "valid x402 payment header to access the resource."
+            ),
+        },
         "docs": "/docs",
         "endpoints": [
             "/services",
@@ -148,17 +231,17 @@ async def list_services():
     services = [
         ServiceInfo(
             name="Portfolio Analysis",
-            description="AI-powered analysis of any Ethereum wallet's holdings, DeFi positions, and risk",
+            description="AI-powered analysis of any Ethereum wallet's holdings, DeFi positions, and risk (x402 paid: $0.01)",
             endpoint="/portfolio/analyze",
             method="POST",
-            fee_usd=1.00,
+            fee_usd=0.01,
         ),
         ServiceInfo(
             name="Vault Monitoring Report",
-            description="Plain-English Lido Earn vault position report with yield benchmarks",
+            description="Plain-English Lido Earn vault position report with yield benchmarks (x402 paid: $0.005)",
             endpoint="/vault/report",
             method="GET",
-            fee_usd=0.00,
+            fee_usd=0.005,
         ),
         ServiceInfo(
             name="Vault Alerts",
@@ -221,7 +304,13 @@ async def service_catalog():
                 "risk profile, and optimization recommendations. Uses LLM inference "
                 "paid from the agent's own yield earnings."
             ),
-            "pricing": {"fee_usd": 1.00, "payment_method": "onchain escrow via ServiceRegistry"},
+            "pricing": {
+                "fee_usd": 0.01,
+                "payment_method": "x402 payment protocol (HTTP 402 flow)",
+                "network": X402_NETWORK,
+                "pay_to": X402_PAY_TO,
+                "facilitator": X402_FACILITATOR_URL,
+            },
             "example_request": {
                 "url": "POST /portfolio/analyze",
                 "body": {"wallet_address": "0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18"},
@@ -241,7 +330,13 @@ async def service_catalog():
                 "benchmarks (Aave, rETH, raw staking), detects allocation shifts, and "
                 "provides actionable summaries."
             ),
-            "pricing": {"fee_usd": 0.00, "payment_method": "free"},
+            "pricing": {
+                "fee_usd": 0.005,
+                "payment_method": "x402 payment protocol (HTTP 402 flow)",
+                "network": X402_NETWORK,
+                "pay_to": X402_PAY_TO,
+                "facilitator": X402_FACILITATOR_URL,
+            },
             "example_request": {"url": "GET /vault/report"},
             "example_response": {
                 "report": "YOUR POSITION: 50 ETH, APY 3.5%, 24h earnings: 0.0048 ETH...",
@@ -497,12 +592,60 @@ async def agent_status():
 
 
 # ---------------------------------------------------------------------------
+# x402 Payment Status
+# ---------------------------------------------------------------------------
+@app.get("/x402/status", tags=["x402"])
+async def x402_status():
+    """Check x402 payment protocol status and configuration.
+
+    Returns whether x402 is active, which endpoints require payment,
+    and how to interact with the payment flow.
+    """
+    return {
+        "x402_enabled": X402_ENABLED,
+        "facilitator": X402_FACILITATOR_URL,
+        "network": X402_NETWORK,
+        "pay_to": X402_PAY_TO,
+        "paid_endpoints": [
+            {
+                "route": "POST /portfolio/analyze",
+                "price": "$0.01",
+                "description": "AI-powered portfolio analysis",
+            },
+            {
+                "route": "GET /vault/report",
+                "price": "$0.005",
+                "description": "Vault monitoring report with yield benchmarks",
+            },
+        ],
+        "free_endpoints": [
+            "/", "/health", "/services", "/services/catalog",
+            "/vault/alerts", "/lido/apy", "/lido/balance",
+            "/lido/stake", "/lido/governance", "/lido/monitor",
+            "/market/price", "/market/quote", "/agent/status",
+            "/x402/status",
+        ],
+        "how_to_pay": (
+            "Send a request to a paid endpoint without a payment header. "
+            "The server returns HTTP 402 with payment requirements in the "
+            "response body. Construct a payment using x402 client SDK, then "
+            "resend the request with the payment-signature header."
+        ),
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+
+
+# ---------------------------------------------------------------------------
 # Health Check
 # ---------------------------------------------------------------------------
 @app.get("/health", tags=["System"])
 async def health():
     """Health check endpoint."""
-    return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
+    return {
+        "status": "ok",
+        "x402_enabled": X402_ENABLED,
+        "timestamp": datetime.utcnow().isoformat(),
+    }
 
 
 # ---------------------------------------------------------------------------

@@ -133,6 +133,18 @@ Every integration below was tested against real APIs — no mocks, no stubs. Pro
 
 ## Integrations
 
+### x402 — Payment Protocol for Agent Services
+- **Protocol:** [x402](https://x402.org) — HTTP 402 Payment Required standard for machine-to-machine payments
+- **Package:** `x402[fastapi,evm]` v2.5.0 — real middleware integrated into the FastAPI service
+- **Facilitator:** `https://x402.org/facilitator` — handles payment verification and settlement
+- **Network:** Base Sepolia (`eip155:84532`) — same chain as deployed contracts
+- **Scheme:** `exact` — EVM exact payment (EIP-712 signed authorization)
+- **Pay-to:** `0x54eeFbb7b3F701eEFb7fa99473A60A6bf5fE16D7`
+- **Paid endpoints:** `POST /portfolio/analyze` ($0.01), `GET /vault/report` ($0.005)
+- **How it works:** Unpaid requests to gated endpoints receive HTTP 402 with payment requirements. Clients use x402 SDK to sign a payment and resend. The facilitator verifies the payment on-chain and the server serves the resource.
+- **Why x402:** Enables any agent or human to pay for AutoFund's services programmatically — no accounts, no API keys, just onchain payments. This turns AutoFund into a real paid service that other agents can discover and use autonomously.
+- **Graceful fallback:** If x402 is not installed, the service still starts with all endpoints accessible (no payment gating).
+
 ### Bankr — Self-Funding Inference
 - **Endpoint:** `https://llm.bankr.bot/v1/chat/completions`
 - **Auth:** `X-API-Key` header (verified working, responds 402 confirming valid key)
@@ -258,20 +270,57 @@ After each daemon cycle, the agent runs `self_check.py` to verify its own operat
 
 Each cycle produces a structured PASS/FAIL verdict with recommendations if any check fails.
 
-### HTTP Service API (Discoverable)
+### HTTP Service API (Discoverable) with x402 Payments
 
-`src/service_api.py` exposes AutoFund as a discoverable HTTP service on Base via FastAPI:
+`src/service_api.py` exposes AutoFund as a discoverable HTTP service on Base via FastAPI, with premium endpoints gated by the **x402 payment protocol**.
 
 ```bash
 uvicorn src.service_api:app --host 0.0.0.0 --port 8000
 ```
 
-Endpoints:
-- `GET /` — Service discovery root with full endpoint listing
+#### x402 Payment Protocol Integration
+
+Premium endpoints require payment via the [x402 protocol](https://x402.org) — the HTTP 402 "Payment Required" standard for machine-to-machine payments. When a client requests a paid endpoint without a payment header, the server returns **HTTP 402** with payment requirements. The client constructs a signed payment using the x402 SDK and resends the request.
+
+| Paid Endpoint | Price | What You Get |
+|---------------|-------|--------------|
+| `POST /portfolio/analyze` | **$0.01** | AI-powered wallet analysis with DeFi positions and risk |
+| `GET /vault/report` | **$0.005** | Plain-English Lido vault monitoring report |
+
+**Configuration:**
+- **Facilitator:** `https://x402.org/facilitator` (handles payment verification + settlement)
+- **Network:** Base Sepolia (`eip155:84532`)
+- **Pay-to address:** `0x54eeFbb7b3F701eEFb7fa99473A60A6bf5fE16D7`
+- **Scheme:** `exact` (EVM exact payment)
+
+**How agents/humans pay:**
+1. Send a request to a paid endpoint (e.g., `POST /portfolio/analyze`)
+2. Receive HTTP 402 with payment requirements in the response
+3. Use x402 client SDK to sign a payment for the required amount
+4. Resend the request with `payment-signature` header
+5. Server verifies payment via facilitator, serves the resource, and settles
+
+**Example with x402 Python client:**
+```python
+from x402.http.clients.httpx import x402_httpx_client
+import httpx
+
+client = x402_httpx_client(httpx.Client(), signer=your_evm_signer)
+response = client.post("http://localhost:8000/portfolio/analyze",
+                       json={"wallet_address": "0x..."})
+# x402 client automatically handles the 402 → pay → retry flow
+```
+
+#### All Endpoints
+
+**Paid (x402 gated):**
+- `POST /portfolio/analyze` — AI-powered portfolio analysis ($0.01)
+- `GET /vault/report` — Vault monitoring report ($0.005)
+
+**Free:**
+- `GET /` — Service discovery root with full endpoint listing and x402 info
 - `GET /services` — List all services with pricing
 - `GET /services/catalog` — Full catalog with examples and descriptions
-- `POST /portfolio/analyze` — AI-powered portfolio analysis (paid, $1)
-- `GET /vault/report` — Plain-English vault monitoring report
 - `GET /vault/alerts` — Run monitoring checks, return alerts
 - `GET /lido/apy` — Current Lido stETH APY with benchmarks
 - `POST /lido/stake` — Simulate staking (dry-run default)
@@ -280,6 +329,7 @@ Endpoints:
 - `GET /market/price` — Real-time ETH/USD price
 - `GET /market/quote` — Swap quote for any token pair
 - `GET /agent/status` — Self-sustainability metrics
+- `GET /x402/status` — x402 payment protocol status and configuration
 - `GET /health` — Health check
 
 ## Project Structure
