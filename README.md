@@ -92,7 +92,7 @@ Human deposits $1,000 → Principal LOCKED in TreasuryVault
 | ServiceRegistry | Celo Sepolia | [`0xb3cf6c10889e674D6958d7177D05D175F9191818`](https://celo-sepolia.blockscout.com/address/0xb3cf6c10889e674D6958d7177D05D175F9191818) | Yes |
 | Mock USDC | Celo Sepolia | [`0xfCb9859F0Cec6b4100b30e20238C2047546Ab78e`](https://celo-sepolia.blockscout.com/address/0xfCb9859F0Cec6b4100b30e20238C2047546Ab78e) | Yes |
 | Mock cUSD | Celo Sepolia | [`0x6b66638D2dDcc2e1b74cE157bb15aB088a3d4545`](https://celo-sepolia.blockscout.com/address/0x6b66638D2dDcc2e1b74cE157bb15aB088a3d4545) | Yes |
-| AutoFund AI Token | Status Network Sepolia | [`0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3`](https://sepoliascan.status.network/address/0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3) | Yes |
+| PrivacyVault (VaultGuard) | Status Network Sepolia | [`0xDcb6aEdb34b7c91F3b83a0Bf61c7d84DB2f9F2bF`](https://sepoliascan.status.network/address/0xDcb6aEdb34b7c91F3b83a0Bf61c7d84DB2f9F2bF) | Yes |
 
 ## Onchain Transaction Proof
 
@@ -244,8 +244,8 @@ Every integration below was tested against real APIs — no mocks, no stubs. Pro
 - **Explorer:** [celo-sepolia.blockscout.com](https://celo-sepolia.blockscout.com)
 
 ### Status Network — Gasless L2 Deployment
-- **Contract deployed on Status Network Sepolia** — zero gas fee transactions
-- **Contract:** [`0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3`](https://sepoliascan.status.network/address/0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3)
+- **PrivacyVault (VaultGuard) deployed on Status Network Sepolia** — zero gas fee transactions
+- **Contract:** [`0xDcb6aEdb34b7c91F3b83a0Bf61c7d84DB2f9F2bF`](https://sepoliascan.status.network/address/0xDcb6aEdb34b7c91F3b83a0Bf61c7d84DB2f9F2bF)
 - **TX:** [`0xb75509c...`](https://sepoliascan.status.network/tx/0xb75509c)
 - **Why Status:** Zero gas fees make it ideal for continuous autonomous agent operations — no gas budgeting required
 - **Explorer:** [sepoliascan.status.network](https://sepoliascan.status.network)

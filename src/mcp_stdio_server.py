@@ -260,9 +260,19 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     """Execute a Lido tool and return the result as MCP TextContent."""
 
-    # vault_health is served by the monitor, not the Lido MCP server
+    # vault_health is now served by LidoMCPServer (reads real TreasuryVault
+    # contract state) with fallback to the monitor for Lido-specific metrics
     if name == "vault_health":
-        result = _monitor.vault_health()
+        # Primary: on-chain TreasuryVault health from the Lido MCP server
+        result = _lido.vault_health()
+        # Merge in Lido-specific monitoring data from VaultMonitor
+        monitor_health = _monitor.vault_health()
+        result["lido_monitor"] = {
+            "status": monitor_health.get("status"),
+            "yield": monitor_health.get("yield"),
+            "allocation": monitor_health.get("allocation"),
+            "alerts": monitor_health.get("alerts"),
+        }
     else:
         result = _lido.handle_tool_call(name, arguments or {})
 
