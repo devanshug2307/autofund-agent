@@ -1,122 +1,144 @@
 {
-  "daemon_start": "2026-03-23T05:48:43.473642",
-  "daemon_end": "2026-03-23T05:49:46.611516",
+  "daemon_start": "2026-03-23T07:26:21.591022",
+  "daemon_end": "2026-03-23T07:27:27.121259",
   "total_cycles": 3,
-  "total_uptime_seconds": 63.137876,
+  "total_uptime_seconds": 65.530239,
   "entries": [
     {
       "cycle": 1,
       "phase": "wake",
       "message": "Starting cycle #1",
       "data": {},
-      "timestamp": "2026-03-23T05:48:45.020732"
+      "timestamp": "2026-03-23T07:26:23.207185"
     },
     {
       "cycle": 1,
       "phase": "sense",
       "message": "Reading treasury status...",
       "data": {},
-      "timestamp": "2026-03-23T05:48:45.020741"
+      "timestamp": "2026-03-23T07:26:23.207190"
     },
     {
       "cycle": 1,
       "phase": "sense",
       "message": "Principal: $0.00 | Yield: $0.00",
       "data": {},
-      "timestamp": "2026-03-23T05:48:45.020809"
+      "timestamp": "2026-03-23T07:26:23.549090"
     },
     {
       "cycle": 1,
       "phase": "sense",
       "message": "Checking Lido APY...",
       "data": {},
-      "timestamp": "2026-03-23T05:48:45.020812"
+      "timestamp": "2026-03-23T07:26:23.549104"
     },
     {
       "cycle": 1,
       "phase": "sense",
       "message": "Lido APY: 2.5%",
       "data": {},
-      "timestamp": "2026-03-23T05:48:45.020833"
+      "timestamp": "2026-03-23T07:26:23.549133"
     },
     {
       "cycle": 1,
       "phase": "sense",
       "message": "Fetching ETH price...",
       "data": {},
-      "timestamp": "2026-03-23T05:48:45.020836"
+      "timestamp": "2026-03-23T07:26:23.549136"
     },
     {
       "cycle": 1,
       "phase": "sense",
-      "message": "ETH/USD: $2062.83",
+      "message": "ETH/USD: $2029.84",
       "data": {
-        "price": 2062.83
+        "price": 2029.84
       },
-      "timestamp": "2026-03-23T05:48:45.267438"
+      "timestamp": "2026-03-23T07:26:23.796198"
+    },
+    {
+      "cycle": 1,
+      "phase": "sense",
+      "message": "Checking Celo vault status...",
+      "data": {},
+      "timestamp": "2026-03-23T07:26:23.796231"
+    },
+    {
+      "cycle": 1,
+      "phase": "sense",
+      "message": "Celo vault: unavailable",
+      "data": {
+        "celo": {
+          "action": "read_celo_vault_status",
+          "source": "unavailable",
+          "contract": "0x8635671a298Bb1da6d0c48CabDb943595Cb9335d",
+          "note": "Could not connect to Celo RPC. Set CELO_RPC_URL env var.",
+          "timestamp": "2026-03-23T07:26:23.959342"
+        }
+      },
+      "timestamp": "2026-03-23T07:26:23.960334"
     },
     {
       "cycle": 1,
       "phase": "think",
       "message": "Analyzing market conditions...",
       "data": {},
-      "timestamp": "2026-03-23T05:48:45.267446"
+      "timestamp": "2026-03-23T07:26:23.960363"
     },
     {
       "cycle": 1,
       "phase": "think",
       "message": "Decision: Based on current market conditions: ETH is showing bullish momentum with RSI at 62, above the 50-day...",
       "data": {},
-      "timestamp": "2026-03-23T05:48:45.267475"
+      "timestamp": "2026-03-23T07:26:23.960479"
     },
     {
       "cycle": 1,
       "phase": "think",
       "message": "Inference cost: $0.000047 (via simulation)",
       "data": {},
-      "timestamp": "2026-03-23T05:48:45.267477"
+      "timestamp": "2026-03-23T07:26:23.960486"
     },
     {
       "cycle": 1,
       "phase": "act",
       "message": "Generating vault monitoring report...",
       "data": {},
-      "timestamp": "2026-03-23T05:48:45.267479"
+      "timestamp": "2026-03-23T07:26:23.960489"
     },
     {
       "cycle": 1,
       "phase": "act",
       "message": "Checking for service requests...",
       "data": {},
-      "timestamp": "2026-03-23T05:48:45.267515"
+      "timestamp": "2026-03-23T07:26:23.960634"
     },
     {
       "cycle": 1,
       "phase": "act",
       "message": "Services provided this session: 1",
       "data": {},
-      "timestamp": "2026-03-23T05:48:45.267517"
+      "timestamp": "2026-03-23T07:26:23.960639"
     },
     {
       "cycle": 1,
       "phase": "check",
       "message": "Verifying self-sustainability...",
       "data": {},
-      "timestamp": "2026-03-23T05:48:45.267518"
+      "timestamp": "2026-03-23T07:26:23.960643"
     },
     {
       "cycle": 1,
       "phase": "check",
       "message": "Net position: $0.0000 (SUSTAINABLE)",
       "data": {},
-      "timestamp": "2026-03-23T05:48:45.267520"
+      "timestamp": "2026-03-23T07:26:23.960649"
     },
     {
       "cycle": 1,
       "phase": "log",
-      "message": "Cycle #1 complete in 0.2s",
+      "message": "Cycle #1 complete in 0.8s",
       "data": {},
-      "timestamp": "2026-03-23T05:48:45.267524"
+      "timestamp": "2026-03-23T07:26:23.960660"
     },
     {
       "cycle": 1,
@@ -131,121 +153,143 @@
         "net_sustainable": true,
         "recommendations": []
       },
-      "timestamp": "2026-03-23T05:48:45.267558"
+      "timestamp": "2026-03-23T07:26:24.267849"
     },
     {
       "cycle": 2,
       "phase": "wake",
       "message": "Starting cycle #2",
       "data": {},
-      "timestamp": "2026-03-23T05:49:15.378129"
+      "timestamp": "2026-03-23T07:26:54.390067"
     },
     {
       "cycle": 2,
       "phase": "sense",
       "message": "Reading treasury status...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:15.378155"
+      "timestamp": "2026-03-23T07:26:54.390142"
     },
     {
       "cycle": 2,
       "phase": "sense",
       "message": "Principal: $0.00 | Yield: $0.00",
       "data": {},
-      "timestamp": "2026-03-23T05:49:15.378292"
+      "timestamp": "2026-03-23T07:26:55.404235"
     },
     {
       "cycle": 2,
       "phase": "sense",
       "message": "Checking Lido APY...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:15.378294"
+      "timestamp": "2026-03-23T07:26:55.404248"
     },
     {
       "cycle": 2,
       "phase": "sense",
       "message": "Lido APY: 2.5%",
       "data": {},
-      "timestamp": "2026-03-23T05:49:15.378363"
+      "timestamp": "2026-03-23T07:26:55.404306"
     },
     {
       "cycle": 2,
       "phase": "sense",
       "message": "Fetching ETH price...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:15.378364"
+      "timestamp": "2026-03-23T07:26:55.404311"
     },
     {
       "cycle": 2,
       "phase": "sense",
-      "message": "ETH/USD: $2062.21",
+      "message": "ETH/USD: $2029.84",
       "data": {
-        "price": 2062.21
+        "price": 2029.84
       },
-      "timestamp": "2026-03-23T05:49:16.267304"
+      "timestamp": "2026-03-23T07:26:55.570562"
+    },
+    {
+      "cycle": 2,
+      "phase": "sense",
+      "message": "Checking Celo vault status...",
+      "data": {},
+      "timestamp": "2026-03-23T07:26:55.570593"
+    },
+    {
+      "cycle": 2,
+      "phase": "sense",
+      "message": "Celo vault: unavailable",
+      "data": {
+        "celo": {
+          "action": "read_celo_vault_status",
+          "source": "unavailable",
+          "contract": "0x8635671a298Bb1da6d0c48CabDb943595Cb9335d",
+          "note": "Could not connect to Celo RPC. Set CELO_RPC_URL env var.",
+          "timestamp": "2026-03-23T07:26:55.584990"
+        }
+      },
+      "timestamp": "2026-03-23T07:26:55.584999"
     },
     {
       "cycle": 2,
       "phase": "think",
       "message": "Analyzing market conditions...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:16.267318"
+      "timestamp": "2026-03-23T07:26:55.585010"
     },
     {
       "cycle": 2,
       "phase": "think",
       "message": "Decision: Based on current market conditions: ETH is showing bullish momentum with RSI at 62, above the 50-day...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:16.267395"
+      "timestamp": "2026-03-23T07:26:55.585101"
     },
     {
       "cycle": 2,
       "phase": "think",
       "message": "Inference cost: $0.000047 (via simulation)",
       "data": {},
-      "timestamp": "2026-03-23T05:49:16.267398"
+      "timestamp": "2026-03-23T07:26:55.585106"
     },
     {
       "cycle": 2,
       "phase": "act",
       "message": "Generating vault monitoring report...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:16.267402"
+      "timestamp": "2026-03-23T07:26:55.585108"
     },
     {
       "cycle": 2,
       "phase": "act",
       "message": "Checking for service requests...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:16.267512"
+      "timestamp": "2026-03-23T07:26:55.585204"
     },
     {
       "cycle": 2,
       "phase": "act",
       "message": "Services provided this session: 2",
       "data": {},
-      "timestamp": "2026-03-23T05:49:16.267521"
+      "timestamp": "2026-03-23T07:26:55.585208"
     },
     {
       "cycle": 2,
       "phase": "check",
       "message": "Verifying self-sustainability...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:16.267523"
+      "timestamp": "2026-03-23T07:26:55.585210"
     },
     {
       "cycle": 2,
       "phase": "check",
       "message": "Net position: $0.0000 (SUSTAINABLE)",
       "data": {},
-      "timestamp": "2026-03-23T05:49:16.267526"
+      "timestamp": "2026-03-23T07:26:55.585215"
     },
     {
       "cycle": 2,
       "phase": "log",
-      "message": "Cycle #2 complete in 0.9s",
+      "message": "Cycle #2 complete in 1.2s",
       "data": {},
-      "timestamp": "2026-03-23T05:49:16.267541"
+      "timestamp": "2026-03-23T07:26:55.585222"
     },
     {
       "cycle": 2,
@@ -260,121 +304,143 @@
         "net_sustainable": true,
         "recommendations": []
       },
-      "timestamp": "2026-03-23T05:49:16.267601"
+      "timestamp": "2026-03-23T07:26:55.969064"
     },
     {
       "cycle": 3,
       "phase": "wake",
       "message": "Starting cycle #3",
       "data": {},
-      "timestamp": "2026-03-23T05:49:46.382791"
+      "timestamp": "2026-03-23T07:27:26.099803"
     },
     {
       "cycle": 3,
       "phase": "sense",
       "message": "Reading treasury status...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:46.382806"
+      "timestamp": "2026-03-23T07:27:26.099884"
     },
     {
       "cycle": 3,
       "phase": "sense",
       "message": "Principal: $0.00 | Yield: $0.00",
       "data": {},
-      "timestamp": "2026-03-23T05:49:46.382894"
+      "timestamp": "2026-03-23T07:27:26.431364"
     },
     {
       "cycle": 3,
       "phase": "sense",
       "message": "Checking Lido APY...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:46.382898"
+      "timestamp": "2026-03-23T07:27:26.431382"
     },
     {
       "cycle": 3,
       "phase": "sense",
       "message": "Lido APY: 2.5%",
       "data": {},
-      "timestamp": "2026-03-23T05:49:46.382959"
+      "timestamp": "2026-03-23T07:27:26.431439"
     },
     {
       "cycle": 3,
       "phase": "sense",
       "message": "Fetching ETH price...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:46.382963"
+      "timestamp": "2026-03-23T07:27:26.431442"
     },
     {
       "cycle": 3,
       "phase": "sense",
-      "message": "ETH/USD: $2062.21",
+      "message": "ETH/USD: $2029.87",
       "data": {
-        "price": 2062.21
+        "price": 2029.87
       },
-      "timestamp": "2026-03-23T05:49:46.610988"
+      "timestamp": "2026-03-23T07:27:26.674531"
+    },
+    {
+      "cycle": 3,
+      "phase": "sense",
+      "message": "Checking Celo vault status...",
+      "data": {},
+      "timestamp": "2026-03-23T07:27:26.674563"
+    },
+    {
+      "cycle": 3,
+      "phase": "sense",
+      "message": "Celo vault: unavailable",
+      "data": {
+        "celo": {
+          "action": "read_celo_vault_status",
+          "source": "unavailable",
+          "contract": "0x8635671a298Bb1da6d0c48CabDb943595Cb9335d",
+          "note": "Could not connect to Celo RPC. Set CELO_RPC_URL env var.",
+          "timestamp": "2026-03-23T07:27:26.689742"
+        }
+      },
+      "timestamp": "2026-03-23T07:27:26.689752"
     },
     {
       "cycle": 3,
       "phase": "think",
       "message": "Analyzing market conditions...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:46.611022"
+      "timestamp": "2026-03-23T07:27:26.689763"
     },
     {
       "cycle": 3,
       "phase": "think",
       "message": "Decision: Based on current market conditions: ETH is showing bullish momentum with RSI at 62, above the 50-day...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:46.611125"
+      "timestamp": "2026-03-23T07:27:26.689850"
     },
     {
       "cycle": 3,
       "phase": "think",
       "message": "Inference cost: $0.000047 (via simulation)",
       "data": {},
-      "timestamp": "2026-03-23T05:49:46.611130"
+      "timestamp": "2026-03-23T07:27:26.689855"
     },
     {
       "cycle": 3,
       "phase": "act",
       "message": "Generating vault monitoring report...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:46.611134"
+      "timestamp": "2026-03-23T07:27:26.689858"
     },
     {
       "cycle": 3,
       "phase": "act",
       "message": "Checking for service requests...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:46.611325"
+      "timestamp": "2026-03-23T07:27:26.689987"
     },
     {
       "cycle": 3,
       "phase": "act",
       "message": "Services provided this session: 3",
       "data": {},
-      "timestamp": "2026-03-23T05:49:46.611361"
+      "timestamp": "2026-03-23T07:27:26.689991"
     },
     {
       "cycle": 3,
       "phase": "check",
       "message": "Verifying self-sustainability...",
       "data": {},
-      "timestamp": "2026-03-23T05:49:46.611367"
+      "timestamp": "2026-03-23T07:27:26.690002"
     },
     {
       "cycle": 3,
       "phase": "check",
       "message": "Net position: $0.0000 (SUSTAINABLE)",
       "data": {},
-      "timestamp": "2026-03-23T05:49:46.611375"
+      "timestamp": "2026-03-23T07:27:26.690007"
     },
     {
       "cycle": 3,
       "phase": "log",
-      "message": "Cycle #3 complete in 0.2s",
+      "message": "Cycle #3 complete in 0.6s",
       "data": {},
-      "timestamp": "2026-03-23T05:49:46.611387"
+      "timestamp": "2026-03-23T07:27:26.690021"
     },
     {
       "cycle": 3,
@@ -389,7 +455,7 @@
         "net_sustainable": true,
         "recommendations": []
       },
-      "timestamp": "2026-03-23T05:49:46.611502"
+      "timestamp": "2026-03-23T07:27:27.121245"
     }
   ]
 }
