@@ -3,19 +3,19 @@
   "deployer": "0x54eeFbb7b3F701eEFb7fa99473A60A6bf5fE16D7",
   "explorer": "https://celo-sepolia.blockscout.com",
   "contracts": {
-    "mockUSDC": "0x0060eD967436DC210aF9F5A2A3A98Ff4D876040b",
-    "mockCUSD": "0x51C96F24A3D6aDc6B5bE391b778a847CCFc78Ba3",
-    "treasuryVault": "0x889442b60e3FBFfFE75d8231EC626138F2505C8f",
-    "serviceRegistry": "0x5cFA9374C4DcdFE58A32d2702d73bB643cc85A36"
+    "mockUSDC": "0xfCb9859F0Cec6b4100b30e20238C2047546Ab78e",
+    "mockCUSD": "0x6b66638D2dDcc2e1b74cE157bb15aB088a3d4545",
+    "treasuryVault": "0x8635671a298Bb1da6d0c48CabDb943595Cb9335d",
+    "serviceRegistry": "0xb3cf6c10889e674D6958d7177D05D175F9191818"
   },
   "transactions": {
-    "mint": "0xa901b59d4246f736990ffbc36d1b3da6b19e6f311188692610105daa074dca08",
-    "deposit": "0x9475a0566c4fe93aab2eb005bedaa519e9096bca0e133349f174525f457d3c0c",
-    "harvest": "0x57ef65a6e8bc8b0a1aab610de5a01e3e44e7d8c52f211e33e37cebbcd36bd106",
-    "registerService": "0x515bf7ebd70f5d84e973654f30af6e04439158e939acf61897ee21a74fd5910d",
-    "agentSpend": "0x1a954b845a8e68b6b8f84e55bc98d26dee03652d480b5014a39d87ccefae10ae",
-    "serviceRequest": "0x7f961fdfd9d1ff708bcdfc83817ee81d96b2b7365cd933efcbc352d6ce5d1d72",
-    "serviceComplete": "0xdb3337580c2f8391cca2445658daecfcb3bd537a47ac6d67eb1c67759360b06e"
+    "mint": "0x340ca1fefa54422b52dc749168698b5f44d44b9390b80ba4335a814d9705c835",
+    "deposit": "0xe2610e01a90cd922d1cd19d2d2b2ac81509c9f69724f516b7f06558a0be6c833",
+    "harvest": "0x5e7f0dd09fc5ba8d5e18f45a2ad838bc56c911b661c3450fc66559afeecbf1da",
+    "registerService": "0x87202273fe44a60be284a28eca80882a441898d5a37c8d0c31edaf0c27b6a06d",
+    "agentSpend": "0x8e5feb93a4235d131c3d85e8523957753ab7eec7f0cfdade7ed84837b6a26fa7",
+    "serviceRequest": "0x32c4a608947040eb59bfd99282283bea8bfb5deffd38a3370b005fae8c4b4550",
+    "serviceComplete": "0x93d00ff25d663501a1feb8daad66164852bd4afdac5558604c0a566d3f20ea04"
   },
-  "timestamp": "2026-03-21T20:05:34.392Z"
+  "timestamp": "2026-03-23T05:59:22.576Z"
 }
