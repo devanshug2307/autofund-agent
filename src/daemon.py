@@ -28,6 +28,7 @@ from src.monitor import VaultMonitor
 from src.uniswap_trader import UniswapTrader
 from src.bankr_integration import BankrGateway
 from src.self_check import SelfChecker
+from src.celo_integration import CeloAgent
 
 
 class AutoFundDaemon:
@@ -61,6 +62,7 @@ class AutoFundDaemon:
         self.monitor = VaultMonitor()
         self.trader = UniswapTrader(api_key=os.getenv("UNISWAP_API_KEY", ""))
         self.bankr = BankrGateway(api_key=os.getenv("BANKR_API_KEY", ""))
+        self.celo = CeloAgent(network="alfajores")
 
         # Activity log for the full daemon session
         self.session_log = []
@@ -115,6 +117,10 @@ class AutoFundDaemon:
         self._log("sense", "Fetching ETH price...")
         price = self.trader.get_real_price()
         self._log("sense", f"ETH/USD: ${price:.2f}", {"price": price})
+
+        self._log("sense", "Checking Celo vault status...")
+        celo_status = self.celo.read_celo_vault_status()
+        self._log("sense", f"Celo vault: {celo_status.get('source', 'checked')}", {"celo": celo_status})
 
         # Phase 3: THINK — Analyze with LLM
         self._log("think", "Analyzing market conditions...")
