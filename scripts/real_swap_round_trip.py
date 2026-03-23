@@ -14,7 +14,10 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.uniswap_trader import UniswapTrader
 
-PRIVATE_KEY = "b5d82d77b0ba619e3bec08dfeb5bde6b55fe5b93e2b4b25dfb07c3e925b13d69"
+PRIVATE_KEY = os.getenv("PRIVATE_KEY")
+if not PRIVATE_KEY:
+    print("ERROR: PRIVATE_KEY environment variable not set")
+    sys.exit(1)
 
 
 def main():
@@ -25,7 +28,7 @@ def main():
 
     # Use Ethereum Sepolia (chainId 11155111) where Uniswap V3 pools have liquidity
     trader = UniswapTrader(
-        api_key=os.getenv("UNISWAP_API_KEY", "Aw0yGu90YrmRs5dYOwdYeHpDH8gvpsuKgBZXWAi9OlE"),
+        api_key=os.getenv("UNISWAP_API_KEY"),
         chain_id=11155111
     )
 

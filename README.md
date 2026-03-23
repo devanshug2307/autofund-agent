@@ -144,20 +144,21 @@ Every integration below was tested against real APIs — no mocks, no stubs. Pro
 | 2 | Lido APY | `lido_live_proof.json` | Live stETH SMA APY 2.42% from `eth-api.lido.fi` (HTTP 200) |
 | 3 | Bankr API | `bankr_api_proof.json` | API key valid (402 not 401), gateway healthy, all 3 providers online |
 | 4 | **Uniswap V3 Swaps** | `swap_proof.json` | **2 real swaps executed onchain** — 0.0008 ETH → 4.44 USDC via SwapRouter02 on Sepolia |
+| 5 | **Autonomous Daemon** | `daemon_session.json` | **3 complete autonomous cycles** — 6/6 self-checks passing, live APY + ETH price, Telegram alerts |
 
 ## Integrations
 
 ### x402 — Payment Protocol for Agent Services
 - **Protocol:** [x402](https://x402.org) — HTTP 402 Payment Required standard for machine-to-machine payments
-- **Package:** `x402[fastapi,evm]` v2.5.0 — real middleware integrated into the FastAPI service
+- **Implementation:** Direct HTTP 402 middleware in FastAPI — always enforced, no optional dependencies
 - **Facilitator:** `https://x402.org/facilitator` — handles payment verification and settlement
 - **Network:** Base Sepolia (`eip155:84532`) — same chain as deployed contracts
 - **Scheme:** `exact` — EVM exact payment (EIP-712 signed authorization)
 - **Pay-to:** `0x54eeFbb7b3F701eEFb7fa99473A60A6bf5fE16D7`
 - **Paid endpoints:** `POST /portfolio/analyze` ($0.01), `GET /vault/report` ($0.005)
-- **How it works:** Unpaid requests to gated endpoints receive HTTP 402 with payment requirements. Clients use x402 SDK to sign a payment and resend. The facilitator verifies the payment on-chain and the server serves the resource.
+- **How it works:** Unpaid requests to gated endpoints receive HTTP 402 with full x402 payment requirements (scheme, network, payTo, price, facilitator URL). Clients construct a signed payment and resend with the `X-PAYMENT` header. The server verifies against the facilitator and serves the resource.
 - **Why x402:** Enables any agent or human to pay for AutoFund's services programmatically — no accounts, no API keys, just onchain payments. This turns AutoFund into a real paid service that other agents can discover and use autonomously.
-- **Graceful fallback:** If x402 is not installed, the service still starts with all endpoints accessible (no payment gating).
+- **Always enforced:** The x402 middleware runs on every request to paid routes — there is no fallback mode where endpoints are ungated.
 
 ### Bankr — Self-Funding Inference
 - **Endpoint:** `https://llm.bankr.bot/v1/chat/completions`
@@ -276,8 +277,8 @@ The agent runs as a continuous daemon with a structured lifecycle:
 WAKE  → Check time, decide if action needed
 SENSE → Read treasury status, market conditions, vault health
 THINK → Analyze data with LLM (Bankr), generate insights
-ACT   → Harvest yield, execute trades, provide services
-CHECK → Verify actions succeeded, track self-sustainability
+ACT   → Harvest yield, execute trades, provide services, push Telegram alerts
+CHECK → Verify actions succeeded, track self-sustainability (6/6 self-checks)
 LOG   → Record all activity for auditability
 SLEEP → Wait for next cycle
 ```
@@ -285,6 +286,8 @@ SLEEP → Wait for next cycle
 ```bash
 python3 -m src.daemon --cycles 3 --interval 60
 ```
+
+**Multi-cycle proof:** `daemon_session.json` — 3 complete autonomous cycles with 6/6 self-checks passing each cycle. The daemon fetches live Lido APY (2.5%), live ETH price ($2,067–$2,068 from CoinGecko), runs Bankr LLM analysis, generates vault monitoring reports, and pushes Telegram alerts when issues are detected — all without human intervention.
 
 ### Self-Check Verification (6 Checks Per Cycle)
 
@@ -309,7 +312,7 @@ uvicorn src.service_api:app --host 0.0.0.0 --port 8000
 
 #### x402 Payment Protocol Integration
 
-Premium endpoints require payment via the [x402 protocol](https://x402.org) — the HTTP 402 "Payment Required" standard for machine-to-machine payments. When a client requests a paid endpoint without a payment header, the server returns **HTTP 402** with payment requirements. The client constructs a signed payment using the x402 SDK and resends the request.
+Premium endpoints require payment via the [x402 protocol](https://x402.org) — the HTTP 402 "Payment Required" standard for machine-to-machine payments. The x402 middleware is **always active** — unpaid requests to gated endpoints return HTTP 402 with full payment requirements (scheme, network, payTo, price, facilitator URL). Clients construct a signed payment and resend with the `X-PAYMENT` header.
 
 | Paid Endpoint | Price | What You Get |
 |---------------|-------|--------------|
@@ -411,6 +414,7 @@ autofund-agent/
 ├── telegram_alert_proof.json       # Proof: initial Telegram alert test
 ├── telegram_alert_proof.txt        # Proof: Telegram alert text output
 ├── telegram_alert_screenshot.png   # Screenshot: real Telegram alerts
+├── daemon_session.json             # Proof: 3-cycle autonomous daemon run (6/6 self-checks per cycle)
 ├── demo_output.json               # Full demo activity log
 ├── demo_proof.txt                 # Proof: full demo run output
 ├── deployment-celo.json           # Celo Sepolia deployment addresses + TX hashes

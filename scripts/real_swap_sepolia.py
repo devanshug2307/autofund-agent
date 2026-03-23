@@ -8,13 +8,17 @@ Uses: 0.0005 ETH -> USDC via the WETH/USDC 1% fee pool
 """
 
 import json
+import os
 import time
 import sys
 from web3 import Web3
 
 # ============ CONFIG ============
 SEPOLIA_RPC = "https://ethereum-sepolia-rpc.publicnode.com"
-PRIVATE_KEY = "b5d82d77b0ba619e3bec08dfeb5bde6b55fe5b93e2b4b25dfb07c3e925b13d69"
+PRIVATE_KEY = os.environ.get("PRIVATE_KEY")
+if not PRIVATE_KEY:
+    print("ERROR: PRIVATE_KEY environment variable not set")
+    sys.exit(1)
 WALLET = "0x54eeFbb7b3F701eEFb7fa99473A60A6bf5fE16D7"
 
 # Uniswap V3 SwapRouter02 on Sepolia

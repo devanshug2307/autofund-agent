@@ -137,6 +137,16 @@ class AutoFundDaemon:
         if alerts:
             for alert in alerts:
                 self._log("act", f"ALERT [{alert.severity}]: {alert.title}")
+            # Push alerts to Telegram if configured
+            tg_results = self.monitor.send_all_alerts_telegram(alerts)
+            for r in tg_results:
+                if r.get("sent"):
+                    self._log("act", f"Telegram alert sent: {r['title']} (msg_id: {r.get('message_id')})")
+                elif r.get("reason"):
+                    self._log("act", "Telegram not configured — skipping alert delivery")
+                    break  # No point trying more if not configured
+                else:
+                    self._log("act", f"Telegram send failed: {r.get('error', 'unknown')}")
 
         self._log("act", "Checking for service requests...")
         self.agent.services_provided += 1  # Simulate serving a request
