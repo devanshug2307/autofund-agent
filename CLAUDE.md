@@ -16,6 +16,9 @@ pip install -r requirements.txt
 # Run all 47 Solidity tests
 npx hardhat --config hardhat.config.cjs test
 
+# Run all 63 Python tests
+python3 -m pytest tests/ -v
+
 # Compile contracts
 npx hardhat --config hardhat.config.cjs compile
 
@@ -43,8 +46,8 @@ For project3-vaultguard, run from its directory with its own hardhat.config.cjs.
 The repo is a **dual-stack** project: Solidity smart contracts (Hardhat/Node) + Python agent logic.
 
 ### Smart Contracts (contracts/)
-- **TreasuryVault.sol** — Principal-locked yield vault. Deposits lock as principal; only yield is withdrawable. Spending guardrails: $100/tx max, $500/day cap. 31 tests prove principal can never be withdrawn.
-- **ServiceRegistry.sol** — On-chain service marketplace with escrow. Agent registers services, users request them, payment is escrowed until completion. 16 tests.
+- **TreasuryVault.sol** — Principal-locked yield vault. Deposits lock as principal; only yield is withdrawable. Spending guardrails: $100/tx max, $500/day cap. 31 Solidity tests prove principal can never be withdrawn.
+- **ServiceRegistry.sol** — On-chain service marketplace with escrow. Agent registers services, users request them, payment is escrowed until completion. 16 Solidity tests.
 - **MockERC20.sol** — Test token (used as mock USDC/stETH on Base Sepolia).
 
 Solidity version: 0.8.20 with optimizer (200 runs). Uses OpenZeppelin 5.x.

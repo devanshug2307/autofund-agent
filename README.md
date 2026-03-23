@@ -30,7 +30,7 @@ AutoFund is an autonomous agent that:
 7. **Reinvests** earnings to grow its operational budget
 8. **Runs autonomously** as a daemon with WAKE→SENSE→THINK→ACT→CHECK→LOG→SLEEP lifecycle
 
-The agent is structurally constrained: spending guardrails (per-tx limits, daily caps) enforce responsible behavior at the smart contract level. **47 tests** prove the principal can never be withdrawn.
+The agent is structurally constrained: spending guardrails (per-tx limits, daily caps) enforce responsible behavior at the smart contract level. **110 tests (47 Solidity + 63 Python)** prove the principal can never be withdrawn.
 
 ## Architecture
 
@@ -175,11 +175,11 @@ Every integration below was tested against real APIs — no mocks, no stubs. Pro
 - **Proof:** `bankr_api_proof.json` — full API call/response, health check, model selection logic, fallback chain
 
 ### stETH Treasury Vault Architecture
-> **Note:** The TreasuryVault is designed to work with ANY yield-bearing ERC20 token, not just stETH. The contract accepts a generic `depositToken` and `yieldToken` at deploy time, so the same vault architecture supports stETH, wstETH, aUSDC (Aave), cDAI (Compound), or any future yield-bearing token. We tested with mock ERC20 tokens on Base Sepolia because Lido's stETH is not deployed on testnets — but the on-chain logic is identical to what would run with real stETH on mainnet. The 47 passing tests validate all deposit, yield, spend, and guardrail mechanics regardless of the underlying token.
+> **Note:** The TreasuryVault is designed to work with ANY yield-bearing ERC20 token, not just stETH. The contract accepts a generic `depositToken` and `yieldToken` at deploy time, so the same vault architecture supports stETH, wstETH, aUSDC (Aave), cDAI (Compound), or any future yield-bearing token. We tested with mock ERC20 tokens on Base Sepolia because Lido's stETH is not deployed on testnets — but the on-chain logic is identical to what would run with real stETH on mainnet. The 110 passing tests (47 Solidity + 63 Python) validate all deposit, yield, spend, and guardrail mechanics regardless of the underlying token.
 
 ### Lido — Yield Source + MCP Server + Vault Monitor
 - **Code:** [`contracts/TreasuryVault.sol`](contracts/TreasuryVault.sol) (vault), [`src/mcp_server.py`](src/mcp_server.py) + [`src/mcp_stdio_server.py`](src/mcp_stdio_server.py) (MCP), [`src/monitor.py`](src/monitor.py) (monitor + Telegram)
-- **Treasury primitive:** TreasuryVault.sol — principal locked at contract level, only yield withdrawable. 47 tests prove this.
+- **Treasury primitive:** TreasuryVault.sol — principal locked at contract level, only yield withdrawable. 110 tests (47 Solidity + 63 Python) prove this.
 - **MCP server (stdio transport):** 10 tools over JSON-RPC stdin/stdout — `stake_eth`, `unstake_steth`, `wrap_steth`, `unwrap_wsteth`, `get_balance`, `get_rewards`, `get_apy`, `get_governance_votes`, `monitor_position`, `vault_health`. All write operations support `dry_run`. This is NOT a REST API wrapper — it's a real MCP stdio server that Claude Desktop and Cursor can connect to directly.
 - **Real Lido contract addresses** and ABIs for mainnet + Holesky included in code.
 - **Live APY:** Fetches real-time stETH APY from `eth-api.lido.fi/v1/protocol/steth/apr/sma` — **verified live: 2.42% SMA APY** (HTTP 200, 7-day APR history included). Proof: `lido_live_proof.json`
@@ -260,9 +260,13 @@ Every integration below was tested against real APIs — no mocks, no stubs. Pro
 
 ## Tests
 
-**47/47 passing** — run with:
+**110 tests passing (47 Solidity + 63 Python)** — run with:
 ```bash
+# Solidity tests (47/47)
 npx hardhat --config hardhat.config.cjs test
+
+# Python tests (63)
+python3 -m pytest tests/ -v
 ```
 
 Test coverage:
@@ -286,8 +290,11 @@ python3 -m src.demo_full_loop
 # Run as autonomous daemon (continuous operation)
 python3 -m src.daemon --cycles 3 --interval 60
 
-# Run tests
+# Run Solidity tests (47/47)
 npx hardhat --config hardhat.config.cjs test
+
+# Run Python tests (63)
+python3 -m pytest tests/ -v
 
 # Deploy contracts (needs Base Sepolia ETH)
 npx hardhat --config hardhat.config.cjs run scripts/deploy-base.cjs --network baseSepolia
@@ -472,7 +479,7 @@ autofund-agent/
 Most "DeFi agents" are either chatbots that suggest trades or bots that execute hardcoded strategies. AutoFund is structurally different:
 
 1. **Self-sustaining economics** — The agent funds its own compute from yield it earns. No human tops up an API key. Revenue exceeds costs by 1000x ($2.997 net on $0.003 spend), proving the economic loop closes.
-2. **Principal can never be withdrawn** — This is not a policy or a prompt instruction. It is enforced at the Solidity level with 47 tests proving the invariant holds under every edge case. The agent is structurally constrained, not just instructed.
+2. **Principal can never be withdrawn** — This is not a policy or a prompt instruction. It is enforced at the Solidity level with 110 tests (47 Solidity + 63 Python) proving the invariant holds under every edge case. The agent is structurally constrained, not just instructed.
 3. **Signal-based trading, not random** — The trading engine uses multi-timeframe momentum analysis (short + mid windows), realized volatility estimation, and quarter-Kelly criterion position sizing. Trade sizes are mathematically optimized based on confidence, win rate, and volatility dampening — not fixed percentages or random amounts.
 4. **Closed-loop autonomy** — Deposit locks principal, yield funds inference, inference powers services, services earn revenue, revenue funds more inference. Each step is proven onchain with verifiable TX hashes.
 5. **Fail-closed payment enforcement** — x402 middleware is always active. There is no config flag, no bypass mode, no "free tier fallback." Unpaid requests to gated endpoints return HTTP 402 every time.
@@ -505,7 +512,7 @@ This is a prototype for the future of autonomous AI operations:
 | 3 | Let the Agent Cook — No Humans Required | Protocol Labs | 7-phase daemon, agent.json, agent_log.json |
 | 4 | Best Bankr LLM Gateway Use | Bankr | Self-funding inference, cost-optimized model selection |
 | 5 | Lido MCP | Lido | 10-tool MCP stdio server with dry_run |
-| 6 | stETH Agent Treasury | Lido | Principal-locked vault, 47 tests, yield-only withdrawal |
+| 6 | stETH Agent Treasury | Lido | Principal-locked vault, 110 tests (47 Solidity + 63 Python), yield-only withdrawal |
 | 7 | Vault Position Monitor + Alert Agent | Lido | Telegram alerts, benchmark comparison, plain-English reports |
 | 8 | Agent Services on Base | Base | ServiceRegistry with escrow, x402 payment protocol |
 | 9 | Autonomous Trading Agent | Base | Real Uniswap V3 swaps on Sepolia, P&L tracking |
