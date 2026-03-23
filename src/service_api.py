@@ -135,11 +135,37 @@ async def x402_payment_middleware(request, call_next):
             if verify_resp.status_code == 200 and verify_resp.json().get("valid"):
                 return await call_next(request)
     except Exception:
-        pass  # Facilitator unreachable — fall through to allow (fail-open for testnet)
+        pass  # Facilitator unreachable — treat as verification failure
 
-    # On testnet: allow requests with payment headers even if verification fails
-    # (facilitator may be down, but the client demonstrated intent to pay)
-    return await call_next(request)
+    # Payment verification failed — return 402 (fail-closed)
+    return JSONResponse(
+        status_code=402,
+        content={
+            "error": "Payment Required",
+            "detail": "Payment verification failed. Please provide a valid payment.",
+            "x402": {
+                "version": "1",
+                "scheme": "exact",
+                "network": X402_NETWORK,
+                "pay_to": X402_PAY_TO,
+                "price": price,
+                "facilitator": X402_FACILITATOR_URL,
+                "accepts": [
+                    {
+                        "scheme": "exact",
+                        "network": X402_NETWORK,
+                        "maxAmountRequired": price,
+                        "resource": route_key,
+                        "payTo": X402_PAY_TO,
+                    }
+                ],
+            },
+        },
+        headers={
+            "X-PAYMENT-REQUIRED": "true",
+            "X-PAYMENT-FACILITATOR": X402_FACILITATOR_URL,
+        },
+    )
 
 
 # ---------------------------------------------------------------------------

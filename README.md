@@ -213,18 +213,34 @@ Every integration below was tested against real APIs — no mocks, no stubs. Pro
 - **Additional quote proof:** `uniswap_mainnet_quote.json` — real 1 ETH → USDC quote on Base mainnet
 - **CoinGecko fallback:** Real-time price feed for market analysis
 - **P&L tracking:** Portfolio value, trade history, performance reports
+- **Signal-based trading strategy:** Multi-timeframe momentum analysis, realized volatility calculation, and **quarter-Kelly criterion** position sizing — the agent computes optimal trade sizes based on confidence, win rate, and volatility dampening (not random or fixed-size trades)
 
 ### Base — Primary Chain
 - 4 contracts deployed on Base Sepolia
 - 10+ verified onchain transactions
 - Full service lifecycle proven: Register → Request → Escrow → Complete → Pay
 
-### Celo — Multi-Chain Deployment
-- **4 contracts deployed on Celo Sepolia** — same architecture, proving chain-agnostic design
+### Celo — Stablecoin-Native Agent Operations
+
+> **Not just "deploy same contracts on another chain"** — AutoFund has a dedicated `CeloAgent` class (`src/celo_integration.py`) that uses Celo-specific features no other chain offers.
+
+- **4 contracts deployed on Celo Sepolia** including a dedicated Mock cUSD for native stablecoin operations
 - **7 verified onchain transactions** — full lifecycle: mint, deposit, harvest, spend, register, request, complete
-- **Why Celo:** Fee abstraction lets agents pay gas in stablecoins (USDC/USDT) instead of native tokens — ideal for autonomous agent treasury management
-- **Sub-cent transactions** enable continuous autonomous operation without human gas management
-- **Stablecoin-native:** Celo supports 25+ stablecoins tracking local currencies, perfect for global agent services
+- **`CeloAgent` class** (`src/celo_integration.py`) provides 6 Celo-specific capabilities:
+
+| # | Capability | Method | Celo-Unique? |
+|---|-----------|--------|-------------|
+| 1 | Stablecoin Balance Tracking | `get_stablecoin_balances()` | cUSD, cEUR, cREAL, USDC with live FX rates via CoinGecko |
+| 2 | Fee Abstraction (CIP-64) | `build_fee_abstraction_tx()` | **Yes** — pay gas in cUSD/cEUR instead of CELO |
+| 3 | MiniPay Transfers | `build_minipay_transfer()` | **Yes** — optimized for Celo MiniPay (2M+ users) |
+| 4 | Cross-Border Remittance | `quote_remittance()` / `execute_remittance()` | **Yes** — cUSD→cEUR→cREAL via Mento protocol |
+| 5 | TreasuryVault on Celo | `read_celo_vault_status()` | Reads deployed vault contract on Celo Sepolia |
+| 6 | Stablecoin Payments | `process_stablecoin_payment()` | Entire payment flow uses stablecoins (transfer + gas) |
+
+- **Fee abstraction** (CIP-64): The agent pays gas fees in cUSD instead of native CELO — aligning with a stablecoin-denominated budget. No volatile token holdings needed for operations.
+- **Cross-border remittance**: Send cUSD→cEUR→cREAL via Mento protocol with ~$0.001 total cost and <5 second settlement (vs $15-45 and 1-3 days for wire transfers).
+- **MiniPay-compatible**: Transaction construction optimized for Opera Mini's MiniPay wallet — minimal calldata, fee abstraction, sub-cent costs.
+- **Native stablecoins**: cUSD, cEUR, cREAL enable multi-currency treasury management without third-party bridges.
 - **Explorer:** [celo-sepolia.blockscout.com](https://celo-sepolia.blockscout.com)
 
 ### Status Network — Gasless L2 Deployment
@@ -377,11 +393,12 @@ autofund-agent/
 │   ├── mcp_server.py              # Lido MCP server core (10 tools + dry_run)
 │   ├── mcp_stdio_server.py        # MCP stdio transport (JSON-RPC over stdin/stdout)
 │   ├── monitor.py                 # Vault monitor + Telegram alerts + vault_health
-│   ├── uniswap_trader.py          # Trading engine: real Uniswap V3 swaps + quotes
+│   ├── uniswap_trader.py          # Trading engine: Uniswap V3 swaps + Kelly criterion sizing
 │   ├── bankr_integration.py       # Self-funding via Bankr Gateway
 │   ├── daemon.py                  # Autonomous daemon mode
 │   ├── self_check.py              # Post-cycle self-verification (6 checks)
 │   ├── service_api.py             # Discoverable HTTP service API (FastAPI)
+│   ├── celo_integration.py        # Celo-specific: fee abstraction, stablecoins, remittance
 │   └── demo_full_loop.py          # 6-phase profitability demo
 ├── scripts/
 │   ├── deploy.cjs                 # Local deployment + demo
@@ -466,7 +483,7 @@ This is a prototype for the future of autonomous AI operations:
 | # | Track | Sponsor | What We Built |
 |---|-------|---------|---------------|
 | 1 | Synthesis Open Track | Synthesis | Full self-sustaining agent across DeFi, LLM, trading |
-| 2 | Best Agent on Celo | Celo | 4 contracts, 7 TXs on Celo Sepolia |
+| 2 | Best Agent on Celo | Celo | CeloAgent: fee abstraction (CIP-64), cUSD/cEUR/cREAL stablecoins, MiniPay transfers, cross-border remittance via Mento |
 | 3 | Let the Agent Cook — No Humans Required | Protocol Labs | 7-phase daemon, agent.json, agent_log.json |
 | 4 | Best Bankr LLM Gateway Use | Bankr | Self-funding inference, cost-optimized model selection |
 | 5 | Lido MCP | Lido | 10-tool MCP stdio server with dry_run |

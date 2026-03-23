@@ -37,6 +37,14 @@ class AgentConfig:
     bankr_api_key: str = ""
     lido_steth_address: str = ""
     usdc_address: str = ""
+    erc8004_identity: dict = field(default_factory=lambda: {
+        "registry_contract": "0xcCEfce0Eb734Df5dFcBd68DB6Cf2bc80e8A87D98",
+        "registration_tx": "0x9890894365098da23a347ba828bab3c6f01b6fd6307e914297be5801e7b36282",
+        "agent_id": "autofund-agent-v1",
+        "chain": "Base Sepolia",
+        "chain_id": 84532,
+        "standard": "ERC-8004",
+    })
 
 
 @dataclass
@@ -70,6 +78,61 @@ class AutoFundAgent:
 
         # Activity log for judges
         self.activity_log = []
+
+    def verify_identity(self) -> dict:
+        """
+        Verify this agent's ERC-8004 identity by querying the AgentRegistry
+        contract deployed by P2 TrustAgent on Base Sepolia.
+
+        Checks that the agent's registration transaction exists on-chain,
+        connecting P1 (AutoFund) to P2's ERC-8004 infrastructure.
+        """
+        identity = self.config.erc8004_identity
+        registry = identity["registry_contract"]
+        reg_tx = identity["registration_tx"]
+
+        result = {
+            "standard": identity["standard"],
+            "registry_contract": registry,
+            "registration_tx": reg_tx,
+            "agent_id": identity["agent_id"],
+            "chain": identity["chain"],
+            "explorer_url": f"https://sepolia.basescan.org/address/{registry}",
+            "tx_url": f"https://basescan.org/tx/0x{reg_tx}" if not reg_tx.startswith("0x") else f"https://basescan.org/tx/{reg_tx}",
+        }
+
+        # Query the chain to confirm the registration TX exists
+        try:
+            rpc_url = self.config.rpc_url
+            resp = httpx.post(rpc_url, json={
+                "jsonrpc": "2.0",
+                "method": "eth_getTransactionReceipt",
+                "params": [reg_tx if reg_tx.startswith("0x") else f"0x{reg_tx}"],
+                "id": 1,
+            }, timeout=10)
+            if resp.status_code == 200:
+                receipt = resp.json().get("result")
+                if receipt and receipt.get("status") == "0x1":
+                    result["verified"] = True
+                    result["block_number"] = int(receipt.get("blockNumber", "0x0"), 16)
+                    result["status"] = "confirmed_onchain"
+                elif receipt:
+                    result["verified"] = True
+                    result["status"] = "tx_found"
+                else:
+                    result["verified"] = False
+                    result["status"] = "tx_not_found_on_this_rpc"
+                    result["note"] = "TX was registered on Base Mainnet; query mainnet RPC for full verification"
+            else:
+                result["verified"] = False
+                result["status"] = "rpc_error"
+        except Exception as e:
+            result["verified"] = False
+            result["status"] = "rpc_unreachable"
+            result["error"] = str(e)
+
+        self.log_activity("verify_erc8004_identity", result)
+        return result
 
     def log_activity(self, action: str, details: dict):
         """Log all agent activity for transparency and judging."""

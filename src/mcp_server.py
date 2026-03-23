@@ -91,6 +91,16 @@ class LidoMCPServer:
         "function stEthPerToken() view returns (uint256)",
     ]
 
+    # Deployed TreasuryVault on Base Sepolia — used for on-chain read operations
+    TREASURY_VAULT_ADDRESS = "0xDcb6aEdb34b7c91F3b83a0Bf61c7d84DB2f9F2bF"
+    TREASURY_VAULT_ABI = [
+        {"inputs":[],"name":"getAvailableYield","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"totalDeposited","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"totalYieldHarvested","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"totalSpent","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"getStatus","outputs":[{"name":"principal","type":"uint256"},{"name":"availableYield","type":"uint256"},{"name":"yieldTokenBal","type":"uint256"},{"name":"cumulativeYieldHarvested","type":"uint256"},{"name":"cumulativeSpent","type":"uint256"},{"name":"dailyRemaining","type":"uint256"}],"stateMutability":"view","type":"function"},
+    ]
+
     def __init__(self, rpc_url: str = "https://sepolia.base.org", network: str = "mainnet"):
         self.rpc_url = rpc_url
         self.network = network
@@ -137,6 +147,40 @@ class LidoMCPServer:
         except Exception:
             pass
         return 0
+
+    def _read_vault_status(self) -> Optional[dict]:
+        """Read TreasuryVault.getStatus() from Base Sepolia via RPC."""
+        vault_addr = os.getenv("TREASURY_VAULT_ADDRESS", self.TREASURY_VAULT_ADDRESS)
+        rpc = os.getenv("RPC_URL", self.rpc_url)
+        try:
+            # getStatus() selector = keccak256("getStatus()")[:4]
+            # Pre-computed: 0x4e69d560
+            with httpx.Client(timeout=10) as client:
+                resp = client.post(rpc, json={
+                    "jsonrpc": "2.0", "method": "eth_call",
+                    "params": [{"to": vault_addr, "data": "0x4e69d560"}, "latest"],
+                    "id": 1,
+                })
+                if resp.status_code == 200:
+                    raw = resp.json().get("result", "0x")
+                    if raw and len(raw) > 66:
+                        hex_data = raw[2:]
+                        values = [int(hex_data[i*64:(i+1)*64], 16) for i in range(6)]
+                        decimals = 18  # MockUSDC uses 18 decimals on testnet
+                        return {
+                            "principal": values[0] / (10 ** decimals),
+                            "available_yield": values[1] / (10 ** decimals),
+                            "yield_token_balance": values[2] / (10 ** decimals),
+                            "total_harvested": values[3] / (10 ** decimals),
+                            "total_spent": values[4] / (10 ** decimals),
+                            "daily_remaining": values[5] / (10 ** decimals),
+                            "contract": vault_addr,
+                            "chain": "Base Sepolia (84532)",
+                            "explorer": f"https://sepolia.basescan.org/address/{vault_addr}",
+                        }
+        except Exception:
+            pass
+        return None
 
     def _log_operation(self, tool: str, params: dict, result: dict, dry_run: bool = False):
         """Log every operation for transparency."""
@@ -333,20 +377,33 @@ class LidoMCPServer:
         return result
 
     def get_balance(self) -> dict:
-        """Query current stETH and wstETH balances."""
+        """Query current stETH and wstETH balances, plus on-chain TreasuryVault data."""
         result = {
             "steth_balance": self.position.steth_balance,
             "wsteth_balance": self.position.wsteth_balance,
             "total_eth_staked": self.position.eth_staked,
             "rewards_earned": self.position.rewards_earned,
             "total_value_eth": self.position.steth_balance + (self.position.wsteth_balance * 1.15),
+            "source": "simulation",
         }
+
+        vault = self._read_vault_status()
+        if vault:
+            result["treasury_vault_onchain"] = {
+                "principal_locked": vault["principal"],
+                "available_yield": vault["available_yield"],
+                "yield_token_balance": vault["yield_token_balance"],
+                "contract": vault["contract"],
+                "chain": vault["chain"],
+                "explorer": vault["explorer"],
+            }
+            result["source"] = "simulation + on-chain TreasuryVault"
+
         self._log_operation("get_balance", {}, result)
         return result
 
     def get_rewards(self) -> dict:
-        """Check accumulated staking rewards."""
-        # Simulate reward accrual based on APY
+        """Check accumulated staking rewards, with on-chain yield from TreasuryVault."""
         daily_rate = self.position.current_apy / 100 / 365
         daily_reward = self.position.eth_staked * daily_rate
 
@@ -357,7 +414,22 @@ class LidoMCPServer:
             "monthly_reward_estimate": f"{daily_reward * 30:.6f} ETH",
             "yearly_reward_estimate": f"{self.position.eth_staked * self.position.current_apy / 100:.6f} ETH",
             "rewards_earned_to_date": self.position.rewards_earned,
+            "source": "simulation",
         }
+
+        vault = self._read_vault_status()
+        if vault:
+            result["treasury_vault_yield"] = {
+                "available_yield_onchain": vault["available_yield"],
+                "total_harvested_onchain": vault["total_harvested"],
+                "total_spent_onchain": vault["total_spent"],
+                "daily_remaining": vault["daily_remaining"],
+                "contract": vault["contract"],
+                "chain": vault["chain"],
+                "note": "These values are read directly from the deployed TreasuryVault on Base Sepolia",
+            }
+            result["source"] = "simulation + on-chain TreasuryVault (getAvailableYield)"
+
         self._log_operation("get_rewards", {}, result)
         return result
 

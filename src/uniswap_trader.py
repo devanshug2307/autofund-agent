@@ -112,14 +112,33 @@ class TradeRecord:
 
 
 @dataclass
+class TradingSignal:
+    """Computed trading signal with confidence and sizing."""
+    direction: str  # "BUY", "SELL", "HOLD"
+    confidence: float  # 0.0 to 1.0
+    position_size_pct: float  # volatility-adjusted position size
+    momentum: float  # price change %
+    volatility: float  # realized volatility estimate
+    reasons: list = field(default_factory=list)
+
+
+@dataclass
 class TradingStrategy:
-    """Simple momentum-based trading strategy."""
-    name: str = "AutoFund Momentum"
-    position_size_pct: float = 10.0  # % of available balance per trade
+    """Volatility-adjusted momentum strategy with Kelly sizing."""
+    name: str = "AutoFund Adaptive Momentum"
+    base_position_size_pct: float = 10.0
     stop_loss_pct: float = 5.0
     take_profit_pct: float = 10.0
     max_daily_trades: int = 10
     cooldown_minutes: int = 30
+    # Kelly criterion parameters
+    kelly_fraction: float = 0.25  # quarter-Kelly for safety
+    max_position_pct: float = 20.0  # hard cap on position size
+    min_position_pct: float = 2.0  # minimum trade size
+    # Momentum thresholds
+    momentum_buy_threshold: float = 1.5  # % price increase to trigger buy
+    momentum_sell_threshold: float = -2.0  # % price decrease to trigger sell
+    volatility_dampening: float = 0.5  # reduce size in high vol
 
 
 class UniswapTrader:
@@ -142,6 +161,7 @@ class UniswapTrader:
         self.trades: list[TradeRecord] = []
         self.portfolio = {"ETH": 10.0, "USDC": 5000.0}  # Starting portfolio
         self.initial_portfolio_value = 5000.0 + (10.0 * 3500)  # ~$40,000
+        self.price_history: list[dict] = []  # stores {"price": float, "timestamp": float}
 
     def get_quote(self, token_in: str, token_out: str, amount: float,
                   token_in_decimals: int = 18) -> dict:
@@ -443,42 +463,181 @@ class UniswapTrader:
             "note": "Set UNISWAP_API_KEY for direct Uniswap quotes"
         }
 
-    def analyze_and_trade(self, market_signal: str) -> dict:
+    def _record_price(self, price: float):
+        """Record a price observation for signal calculation."""
+        self.price_history.append({"price": price, "timestamp": time.time()})
+        if len(self.price_history) > 500:
+            self.price_history = self.price_history[-500:]
+
+    def calculate_signals(self, current_price: float = None) -> TradingSignal:
         """
-        Make a trading decision based on market signal from LLM analysis.
+        Compute trading signals using momentum, volatility, and multi-timeframe
+        confirmation. Returns a TradingSignal with direction, confidence, and
+        volatility-adjusted position sizing via fractional Kelly criterion.
+        """
+        if current_price is None:
+            current_price = self.get_real_price()
+        self._record_price(current_price)
+
+        reasons = []
+
+        # --- Momentum: short-term (last 5 observations) vs mid-term (last 20) ---
+        prices = [p["price"] for p in self.price_history]
+        n = len(prices)
+
+        if n < 2:
+            return TradingSignal("HOLD", 0.0, 0.0, 0.0, 0.0, ["Insufficient price history"])
+
+        short_window = prices[-min(5, n):]
+        mid_window = prices[-min(20, n):]
+
+        short_momentum = ((short_window[-1] / short_window[0]) - 1) * 100 if short_window[0] else 0
+        mid_momentum = ((mid_window[-1] / mid_window[0]) - 1) * 100 if mid_window[0] else 0
+
+        # --- Volatility: standard deviation of returns ---
+        if n >= 3:
+            returns = [(prices[i] / prices[i-1]) - 1 for i in range(1, n)]
+            mean_ret = sum(returns) / len(returns)
+            variance = sum((r - mean_ret) ** 2 for r in returns) / len(returns)
+            volatility = variance ** 0.5 * 100  # as percentage
+        else:
+            volatility = 2.0  # default moderate volatility
+
+        # --- Multi-timeframe confirmation ---
+        short_bullish = short_momentum > self.strategy.momentum_buy_threshold
+        mid_bullish = mid_momentum > 0
+        short_bearish = short_momentum < self.strategy.momentum_sell_threshold
+        mid_bearish = mid_momentum < 0
+
+        # --- Direction decision ---
+        if short_bullish and mid_bullish:
+            direction = "BUY"
+            confidence = min(1.0, abs(short_momentum) / 5.0)
+            reasons.append(f"Short momentum +{short_momentum:.2f}% confirms mid-term uptrend +{mid_momentum:.2f}%")
+        elif short_bearish and mid_bearish:
+            direction = "SELL"
+            confidence = min(1.0, abs(short_momentum) / 5.0)
+            reasons.append(f"Short momentum {short_momentum:.2f}% confirms mid-term downtrend {mid_momentum:.2f}%")
+        elif short_bullish and not mid_bullish:
+            direction = "BUY"
+            confidence = min(1.0, abs(short_momentum) / 5.0) * 0.5
+            reasons.append(f"Short-term bullish +{short_momentum:.2f}% but mid-term not confirmed ({mid_momentum:.2f}%)")
+        elif short_bearish and not mid_bearish:
+            direction = "SELL"
+            confidence = min(1.0, abs(short_momentum) / 5.0) * 0.5
+            reasons.append(f"Short-term bearish {short_momentum:.2f}% but mid-term not confirmed ({mid_momentum:.2f}%)")
+        else:
+            direction = "HOLD"
+            confidence = 0.0
+            reasons.append(f"No clear signal: short={short_momentum:.2f}%, mid={mid_momentum:.2f}%")
+
+        # --- Kelly criterion position sizing ---
+        # Kelly fraction = (win_prob * avg_win - loss_prob * avg_loss) / avg_win
+        # Simplified: use confidence as win probability proxy
+        if direction != "HOLD" and confidence > 0:
+            win_rate = 0.5 + (confidence * 0.2)  # 50-70% estimated win rate
+            avg_win = self.strategy.take_profit_pct
+            avg_loss = self.strategy.stop_loss_pct
+            kelly_raw = (win_rate * avg_win - (1 - win_rate) * avg_loss) / avg_win
+            kelly_size = max(0, kelly_raw) * self.strategy.kelly_fraction * 100
+
+            # Volatility dampening: reduce position in high-vol environments
+            vol_factor = max(0.2, 1.0 - (volatility * self.strategy.volatility_dampening / 10.0))
+            position_size = kelly_size * vol_factor
+
+            # Clamp to min/max
+            position_size = max(self.strategy.min_position_pct,
+                                min(self.strategy.max_position_pct, position_size))
+            reasons.append(f"Kelly size {kelly_size:.1f}% x vol_factor {vol_factor:.2f} = {position_size:.1f}%")
+        else:
+            position_size = 0.0
+
+        return TradingSignal(
+            direction=direction,
+            confidence=round(confidence, 3),
+            position_size_pct=round(position_size, 2),
+            momentum=round(short_momentum, 3),
+            volatility=round(volatility, 3),
+            reasons=reasons,
+        )
+
+    def analyze_and_trade(self, market_signal: str = None, use_signals: bool = True,
+                          execute_onchain: bool = False) -> dict:
+        """
+        Make a trading decision using computed technical signals or an LLM hint.
+
+        When use_signals=True (default), computes momentum/volatility signals and
+        uses Kelly-criterion position sizing. The market_signal parameter can
+        override direction if provided.
 
         Args:
-            market_signal: "BUY", "SELL", or "HOLD" from LLM analysis
+            market_signal: Optional "BUY"/"SELL"/"HOLD" override from LLM analysis
+            use_signals: If True, compute technical signals for sizing/confirmation
+            execute_onchain: If True, execute via Uniswap V3 SwapRouter instead of simulating
         """
+        current_price = self.get_real_price()
+        signals = self.calculate_signals(current_price) if use_signals else None
+
+        # Determine final direction: LLM signal takes precedence for direction,
+        # but technical signals govern position sizing and confidence
+        if market_signal and market_signal in ("BUY", "SELL", "HOLD"):
+            direction = market_signal
+            if signals and signals.direction != direction and direction != "HOLD":
+                if signals.confidence > 0.5:
+                    direction = signals.direction  # strong technical signal overrides weak LLM
+        elif signals:
+            direction = signals.direction
+        else:
+            direction = "HOLD"
+
+        position_size_pct = signals.position_size_pct if signals and signals.position_size_pct > 0 else self.strategy.base_position_size_pct
+
         result = {
-            "signal": market_signal,
+            "signal": direction,
             "timestamp": datetime.utcnow().isoformat(),
+            "current_price": current_price,
             "action_taken": None,
-            "trade": None
+            "trade": None,
+            "signals": {
+                "momentum": signals.momentum if signals else None,
+                "volatility": signals.volatility if signals else None,
+                "confidence": signals.confidence if signals else None,
+                "position_size_pct": position_size_pct,
+                "reasons": signals.reasons if signals else [],
+            },
         }
 
-        if market_signal == "HOLD":
+        if direction == "HOLD":
             result["action_taken"] = "No trade — holding position"
             return result
 
-        if market_signal == "BUY":
-            # Use 10% of USDC to buy ETH
-            trade_amount = self.portfolio["USDC"] * (self.strategy.position_size_pct / 100)
+        if direction == "BUY":
+            trade_amount = self.portfolio["USDC"] * (position_size_pct / 100)
             if trade_amount < 1.0:
                 result["action_taken"] = "Insufficient USDC balance"
                 return result
-            trade = self.simulate_swap("ETH/USDC", "BUY", trade_amount)
-            result["action_taken"] = f"Bought {trade.amount_out:.6f} ETH for ${trade.amount_in:.2f}"
-            result["trade"] = trade
+            if execute_onchain:
+                swap_result = self.execute_real_swap("USDC", "ETH", trade_amount, pool_fee=3000)
+                result["action_taken"] = f"On-chain BUY: {swap_result.get('status')}"
+                result["trade"] = swap_result
+            else:
+                trade = self.simulate_swap("ETH/USDC", "BUY", trade_amount)
+                result["action_taken"] = f"Bought {trade.amount_out:.6f} ETH for ${trade.amount_in:.2f} (size={position_size_pct:.1f}%)"
+                result["trade"] = trade
 
-        elif market_signal == "SELL":
-            trade_amount = self.portfolio["ETH"] * (self.strategy.position_size_pct / 100)
+        elif direction == "SELL":
+            trade_amount = self.portfolio["ETH"] * (position_size_pct / 100)
             if trade_amount < 0.001:
                 result["action_taken"] = "Insufficient ETH balance"
                 return result
-            trade = self.simulate_swap("ETH/USDC", "SELL", trade_amount)
-            result["action_taken"] = f"Sold {trade.amount_in:.6f} ETH for ${trade.amount_out:.2f}"
-            result["trade"] = trade
+            if execute_onchain:
+                swap_result = self.execute_real_swap("ETH", "USDC", trade_amount, pool_fee=3000)
+                result["action_taken"] = f"On-chain SELL: {swap_result.get('status')}"
+                result["trade"] = swap_result
+            else:
+                trade = self.simulate_swap("ETH/USDC", "SELL", trade_amount)
+                result["action_taken"] = f"Sold {trade.amount_in:.6f} ETH for ${trade.amount_out:.2f} (size={position_size_pct:.1f}%)"
+                result["trade"] = trade
 
         return result
 
@@ -526,9 +685,11 @@ class UniswapTrader:
 ╚══════════════════════════════════════════════════╝
 
 STRATEGY: {self.strategy.name}
-  Position Size: {self.strategy.position_size_pct}% per trade
+  Position Size: {self.strategy.base_position_size_pct}% base (Kelly-adjusted)
   Stop Loss: {self.strategy.stop_loss_pct}%
   Take Profit: {self.strategy.take_profit_pct}%
+  Kelly Fraction: {self.strategy.kelly_fraction} (quarter-Kelly)
+  Vol Dampening: {self.strategy.volatility_dampening}
 
 PORTFOLIO:
   ETH:  {pnl['portfolio']['ETH']:.6f} (~${pnl['portfolio']['ETH'] * 3500:.2f})

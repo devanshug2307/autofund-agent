@@ -57,10 +57,11 @@ All Python modules are run as `python3 -m src.<module>` from the repo root.
 - **mcp_server.py** — Lido MCP server with 9 tools (stake_eth, unstake_steth, wrap_steth, unwrap_wsteth, get_balance, get_rewards, get_apy, get_governance_votes, monitor_position). All write ops support `dry_run`.
 - **mcp_stdio_server.py** — MCP JSON-RPC stdio transport wrapping the Lido MCP server.
 - **monitor.py** — `VaultMonitor` that fetches live Lido APY from eth-api.lido.fi, compares against benchmarks (Aave, rETH), detects yield drops/floor breaches/allocation shifts, generates plain-English reports and Telegram-formatted alerts.
-- **uniswap_trader.py** — Trading engine using Uniswap API for quotes with CoinGecko price fallback. Tracks portfolio P&L and trade history.
+- **uniswap_trader.py** — Trading engine using Uniswap API for quotes with CoinGecko price fallback. Signal-based strategy with momentum analysis, volatility calculation, and quarter-Kelly criterion position sizing. Tracks portfolio P&L and trade history.
+- **celo_integration.py** — `CeloAgent` class for Celo-specific operations: stablecoin balance tracking (cUSD/cEUR/cREAL), CIP-64 fee abstraction, MiniPay-optimized transfers, cross-border remittance via Mento, and TreasuryVault reads on Celo Sepolia.
 - **bankr_integration.py** — `BankrGateway` for self-funding LLM calls. Selects optimal model by task complexity (Gemini Flash for simple → Claude Opus for critical). Fallback chain: Bankr → Anthropic → simulation.
 - **self_check.py** — `SelfChecker` runs 6 verification checks per daemon cycle (principal intact, yield non-negative, budget not exhausted, etc.).
-- **service_api.py** — FastAPI service with discovery endpoints, portfolio analysis, vault monitoring, Lido operations, and agent status. Premium endpoints (`/portfolio/analyze`, `/vault/report`) are gated by x402 payment protocol middleware (HTTP 402 flow) on Base Sepolia via facilitator at `https://x402.org/facilitator`.
+- **service_api.py** — FastAPI service with discovery endpoints, portfolio analysis, vault monitoring, Lido operations, and agent status. Premium endpoints (`/portfolio/analyze`, `/vault/report`) are gated by x402 payment protocol middleware (HTTP 402 flow, fail-closed — unpaid requests always get 402) on Base Sepolia via facilitator at `https://x402.org/facilitator`.
 - **demo_full_loop.py** — 6-phase demo proving the full profitability loop.
 
 ### Key Data Flow
